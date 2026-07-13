@@ -1,0 +1,53 @@
+import type { GameEvent } from "./types";
+
+export const EVENTS: GameEvent[] = [
+  {
+    slug: "kibou-collab-event",
+    name: "ブレイドオブキボウ コラボイベント",
+    category: "collab",
+    startDate: "2026-06-20",
+    endDate: "2026-07-31",
+    description: "コラボミッションをクリアして限定アバター境界・コラボ通貨を集めよう。コラボ通貨は限定スキンガチャに使用できる。",
+    rewards: ["限定アバター境界", "コラボ通貨 x120", "限定リコールエフェクト"],
+    progress: 64,
+  },
+  {
+    slug: "season-38-kickoff",
+    name: "シーズン38 開幕記念ログイン",
+    category: "season",
+    startDate: "2026-07-01",
+    endDate: "2026-07-21",
+    description: "シーズン38開幕を記念して、7日間ログインで豪華報酬をプレゼント。最終日にはエピックスキン選択ボックスが待っている。",
+    rewards: ["エピックスキン選択ボックス", "ダイヤ x100", "レアスキンかけら x50"],
+    progress: 85,
+  },
+  {
+    slug: "515-eparty",
+    name: "5.15 e-Party 前夜祭",
+    category: "login",
+    startDate: "2026-07-10",
+    endDate: "2026-07-24",
+    description: "ミニゲーム「スターダンス」に参加してポイントを貯めると、限定エモートと引き換え可能。",
+    rewards: ["限定エモート", "チケット x30", "経験値ブースト"],
+    progress: 30,
+  },
+  {
+    slug: "mythic-shop-refresh",
+    name: "ミシックショップ更新",
+    category: "shop",
+    startDate: "2026-07-05",
+    endDate: "2026-08-05",
+    description: "ミシックショップのラインナップが更新。過去の限定スキンがダイヤ割引で再登場する。",
+    rewards: ["限定スキン再販", "最大40%オフ"],
+  },
+  {
+    slug: "starlight-july",
+    name: "7月スターライトメンバー",
+    category: "season",
+    startDate: "2026-07-01",
+    endDate: "2026-07-31",
+    description: "今月のスターライトスキンは「アビスウォーデン・フランコ」。タスク達成でスターライトレベルを上げよう。",
+    rewards: ["スターライトスキン", "専用ボーダー", "ネームカラー変更"],
+    progress: 42,
+  },
+];

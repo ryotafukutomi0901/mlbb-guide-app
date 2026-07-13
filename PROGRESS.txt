@@ -1,0 +1,106 @@
+MLBB Companion Platform (MLBB LAB) 進捗まとめ
+更新日: 2026-07-13
+状態: ゲームランチャーUIへの全面刷新＋フェーズ2機能(全29画面相当)完成。lint/型/ビルド/実機動作すべて確認済み。
+
+────────────────────────────────────
+■ プロジェクト概要
+────────────────────────────────────
+・内容: Mobile Legends: Bang Bang(MLBB)のCompanion Platform「MLBB LAB」
+・世界観: 公式ゲームクライアント風のランチャーUI(AI感の排除)。
+  カラー: Dark Navy / Black / Purple / Gold / Blue Neon + Red/Orange
+・提供形態: Webサイト(レスポンシブ、Desktop/Tablet/Mobile最適化)
+・マネタイズ: 広告のみ(AdSlotプレースホルダー設置済み)
+・データ: すべてTypeScript静的データ + Repository層で抽象化(DB移行可能な構成)
+
+────────────────────────────────────
+■ 技術スタック
+────────────────────────────────────
+・Next.js 16 (App Router, Turbopack, TypeScript) / Tailwind CSS 4
+・Framer Motion(UIアニメーション) + GSAP(スプラッシュ・ホームヒーロー演出)
+・lucide-react / clsx
+・フォント: Noto Sans JP(本文) + Orbitron(数値・見出しのdisplay書体)
+
+────────────────────────────────────
+■ アーキテクチャ
+────────────────────────────────────
+src/
+  app/           全ルート(下記「画面一覧」参照)
+  components/    機能別コンポーネント(hero/item/jungle/skin/gacha/coach/...)
+    fx/          背景演出(AuroraBackground, ParticleField, MouseGlow, SplashScreen, PageTransition)
+    layout/      Sidebar(デスクトップ), TopBar, BottomNav(モバイル), Footer
+    ui/          プリミティブ(Card, Button, Badge, Tabs, StatBar, FilterChips, SearchInput, CountUp, PageHeader, ...)
+  data/          静的データ(heroes, items, emblems, battle-spells, skins, gacha, events, patches, rankings, profile, coach, meta, news, jungle, images)
+  repositories/  データアクセス層(hero/item/skin/match/content) ← DB移行時はここだけ差し替え
+  services/ai/   AI Provider Pattern(OpenAI/Claude/Gemini/OpenRouter、接続のみ・未呼び出し。デフォルトはOpenRouter)
+  prompts/       systemPrompt / analysisPrompt / summaryPrompt / coachPrompt
+  providers/     AppStateProvider(お気に入り・閲覧履歴・設定をlocalStorage永続化)
+  hooks/ lib/ animations/
+
+・.env.example に OPENAI_API_KEY / ANTHROPIC_API_KEY / GEMINI_API_KEY / OPENROUTER_API_KEY
+
+────────────────────────────────────
+■ 画面一覧(すべて実装済み)
+────────────────────────────────────
+/                    ホーム(ランチャー: フィーチャーヒーロー、今日のMETA、勝率上昇、ニュース、イベント、パッチ、ランキング、AIレポート、おすすめビルド、最近見た/お気に入り)
+/characters          ヒーロー一覧(検索・ロール・ソート、107体)
+/characters/[slug]   ヒーロー詳細(バナー+WR/PR/BR、タブ: 概要/スキル詳細/ビルド/カウンター/ステータス/スキン/ストーリー、お気に入り、閲覧履歴)
+/simulator           ビルドシミュレーター(Lv1-15スライダー、6装備、エンブレム、スペル、全16ステータス再計算、レーダー比較)
+/compendium          図鑑ハブ
+/compendium/items    アイテム図鑑(検索・カテゴリ・価格ソート・詳細パネル・素材/派生ツリー)
+/compendium/jungle   ジャングル図鑑(HP/ゴールド/EXP/出現エリア)+リアルタイムタイマー(動作確認済み)
+/compendium/emblems  エンブレム(7種+タレント3段)
+/compendium/spells   バトルスペル(12種)
+/tier-list           Tierリスト(S+〜B帯別)
+/meta                Metaランキング(勝率/ピック率/バン率/上昇率切替、ロールフィルタ)
+/counters            カウンター一覧(ヒーロー選択→有利/不利/シナジー)
+/news /events /patches  ニュース/イベント/パッチノート(タイムラインUI)
+/skins /skins/[slug] スキン一覧(レアリティフィルタ・所持管理)/詳細
+/gacha               ガチャシミュレーター(確率テーブル準拠、天井カウンター、演出スキップ、動作確認済み)
+/coach               AIコーチ(参考UI準拠: 総合評価リング、タイムスタンプ付き分析、重要シーンタイムライン、パフォーマンス6カテゴリ、ヒートマップ(移動/デス/視界)、ビルド提案、ドラフト分析、意識ポイントTOP3、練習メニュー)
+/analysis            試合分析(戦績サマリー+展開式スコアボード)
+/ranking             ランキング(表彰台+リスト)
+/profile             プロフィール(ランク、メインヒーロー勝率、ハイライト、スキンコレクション)
+/search              グローバル検索(ヒーロー/アイテム/スキン/スペル/エンブレム横断+全ページクイックアクセス)
+/settings            設定(演出軽減、地域、ローカルデータ初期化)
+/privacy             プライバシーポリシー
++ Splash(セッション初回のみGSAP演出) / loading.tsx / not-found.tsx(404)
+
+────────────────────────────────────
+■ データについての注意
+────────────────────────────────────
+・勝率等のメタ数値: 主要30体はsrc/data/meta.tsで手動キュレーション、
+  残りはヒーローのTierを基準にシード生成(heroRepository)。実データ連携時はrepositoryを差し替え。
+・画像: ヒーロー画像はpublic/images/heroes/に133枚。アイテム画像は2026-07-13に
+  mlbbcentral.comから55枚取得しpublic/images/items/へ配置、うち35枚をITEM_IMAGESに登録済み
+  (リネーム対応: winter-truncheon→winter-crown.png, magic-shoes→magic-boots.png)。
+  未登録6種は中間素材(rogue-meteor等、配布元に画像なし)でプレースホルダー表示。
+  スキル/ジャングルは引き続きプレースホルダー(images.tsに追記すれば自動反映)。
+・AI API: 接続コードのみ実装、実呼び出しなし(コーチ画面はsrc/data/coach.tsのダミーレポート)。
+
+────────────────────────────────────
+■ 検証結果(2026-07-13)
+────────────────────────────────────
+・npx tsc --noEmit: エラー0 / npm run lint: エラー0 / npm run build: 成功(静的151ページ)
+・Playwrightで全24ルートをデスクトップ(1440px)+モバイル(390px)スクリーンショット確認
+・実機動作確認: ジャングルタイマーのカウントダウン・討伐再計算、ガチャ10連(確率・天井カウンター)、
+  シミュレーターの装備反映(0G→3,010G、物理攻撃+160)、ヒーロー詳細タブ切替、お気に入り登録→ホーム反映、
+  検索、コーチレポート切替・ヒートマップレイヤー切替
+・コンソールエラー0(404ページの404レスポンスのみ=正常)
+
+────────────────────────────────────
+■ 開発サーバー
+────────────────────────────────────
+・ポート3000/3001は他プロジェクト使用中のため3002を使用。
+・起動: npm run dev -- -p 3002
+・注意: dev(Turbopack)は初回コンパイルが重い(1ルート20〜100秒)。
+  確認だけなら npm run build && npm run start -- -p 3002 が速い。
+
+────────────────────────────────────
+■ 未着手・保留タスク
+────────────────────────────────────
+・Supabase接続とデータモデル設計(Repository層差し替えで移行可能)
+・管理画面(CMS)
+・AIコーチの実API接続(services/ai/は接続準備済み。UIからの呼び出し配線が未実装)
+・アイテム/スキル/ジャングル/スキンの画像素材追加(images.tsに登録するだけ)
+・残り98体のヒーロー詳細データ拡充(src/data/heroes.tsのHERO_DETAILS)
+・Google AdSense審査申請

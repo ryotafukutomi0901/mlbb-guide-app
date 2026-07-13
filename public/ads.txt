@@ -1,0 +1,2 @@
+# Google AdSenseの審査・登録が完了したら、発行されたpublisher IDに差し替えてください。
+# 例: google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
