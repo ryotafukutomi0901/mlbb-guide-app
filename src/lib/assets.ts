@@ -23,7 +23,6 @@ export function emblemImage(slug: string): string | undefined {
 // ホーム/詳細ページのバナー用アートワーク。差し替えはこの配列を編集する。
 export const BANNER_IMAGES = [
   "/images/entrance/MLBB-Earthquake-1.jpg",
-  "/images/entrance/ca80df9051c8d2423f60fc017a61e39a.jpg",
   "/images/entrance/images.jpeg",
   "/images/entrance/images%20(1).jpeg",
   "/images/entrance/images%20(2).jpeg",
