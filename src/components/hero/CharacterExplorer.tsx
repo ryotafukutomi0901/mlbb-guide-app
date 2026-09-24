@@ -6,13 +6,15 @@ import { HeroCard } from "@/components/hero/HeroCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterChips } from "@/components/ui/FilterChips";
 import { SearchInput } from "@/components/ui/SearchInput";
-import { ROLE_LABEL, type HeroSummary, type Role } from "@/data/types";
+import { LANE_LABEL, ROLE_LABEL, type HeroSummary, type Lane, type Role } from "@/data/types";
 import { getAllHeroes, getHeroMeta } from "@/repositories/heroRepository";
 import { tierRank } from "@/lib/tier";
 import { staggerFast } from "@/animations/variants";
 
 const ROLES = Object.keys(ROLE_LABEL) as Role[];
 const ROLE_OPTIONS = ROLES.map((r) => ({ value: r, label: ROLE_LABEL[r] }));
+const LANES = Object.keys(LANE_LABEL) as Lane[];
+const LANE_OPTIONS = LANES.map((l) => ({ value: l, label: LANE_LABEL[l] }));
 
 type SortKey = "tier" | "winRate" | "name" | "release";
 
@@ -25,14 +27,23 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 
 const SORTERS: Record<SortKey, (a: HeroSummary, b: HeroSummary) => number> = {
   tier: (a, b) => tierRank(a.tier) - tierRank(b.tier),
-  winRate: (a, b) => getHeroMeta(b.slug).winRate - getHeroMeta(a.slug).winRate,
+  winRate: (a, b) => (getHeroMeta(b.slug)?.winRate ?? -1) - (getHeroMeta(a.slug)?.winRate ?? -1),
   name: (a, b) => a.name.localeCompare(b.name, "ja"),
   release: (a, b) => b.releaseYear - a.releaseYear,
 };
 
-export function CharacterExplorer({ initialRole }: { initialRole?: string }) {
+export function CharacterExplorer({
+  initialRole,
+  initialLane,
+}: {
+  initialRole?: string;
+  initialLane?: string;
+}) {
   const [role, setRole] = useState<Role | "all">(
     initialRole && ROLES.includes(initialRole as Role) ? (initialRole as Role) : "all"
+  );
+  const [lane, setLane] = useState<Lane | "all">(
+    initialLane && LANES.includes(initialLane as Lane) ? (initialLane as Lane) : "all"
   );
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("tier");
@@ -40,16 +51,20 @@ export function CharacterExplorer({ initialRole }: { initialRole?: string }) {
   const allHeroes = getAllHeroes();
 
   const heroes = useMemo(() => {
+    const q = query.trim().toLowerCase();
     const filtered = allHeroes.filter((hero) => {
       const matchesRole = role === "all" || hero.roles.includes(role);
+      const matchesLane =
+        lane === "all" || hero.lane === lane || hero.altLanes?.includes(lane) === true;
       const matchesQuery =
-        query.trim() === "" ||
+        q === "" ||
         hero.name.includes(query) ||
-        hero.nameEn.toLowerCase().includes(query.toLowerCase());
-      return matchesRole && matchesQuery;
+        hero.nameEn.toLowerCase().includes(q) ||
+        hero.aliases?.some((a) => a.includes(query)) === true;
+      return matchesRole && matchesLane && matchesQuery;
     });
     return [...filtered].sort(SORTERS[sort]);
-  }, [allHeroes, role, query, sort]);
+  }, [allHeroes, role, lane, query, sort]);
 
   return (
     <div>
@@ -74,11 +89,14 @@ export function CharacterExplorer({ initialRole }: { initialRole?: string }) {
         </div>
       </div>
 
-      <FilterChips options={ROLE_OPTIONS} value={role} onChange={setRole} className="mb-6" />
+      <div className="mb-6 flex flex-col gap-2">
+        <FilterChips options={ROLE_OPTIONS} value={role} onChange={setRole} />
+        <FilterChips options={LANE_OPTIONS} value={lane} onChange={setLane} allLabel="全レーン" />
+      </div>
 
       {heroes.length > 0 ? (
         <motion.div
-          key={`${role}:${sort}:${query}`}
+          key={`${role}:${lane}:${sort}:${query}`}
           variants={staggerFast}
           initial="hidden"
           animate="visible"

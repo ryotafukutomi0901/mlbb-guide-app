@@ -58,7 +58,7 @@ export const NEWS: NewsItem[] = [
     title: "パッチ1.9.36 — 新ヒーロー「ゼティアン」実装",
     category: "patch",
     date: "2026-06-17",
-    summary: "魔法剣士型の新ヒーローが参戦。クロック・オブ・デスティニーのリワークも。",
+    summary: "魔法剣士型の新ヒーローが参戦。デスティニーのリワークも。",
   },
   {
     slug: "starlight-july",

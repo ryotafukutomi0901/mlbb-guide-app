@@ -9,6 +9,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { AppStateProvider } from "@/providers/AppStateProvider";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
@@ -24,12 +25,37 @@ const orbitron = Orbitron({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE.url),
   title: {
-    default: "MLBB LAB — Mobile Legends Companion Platform",
+    default: SITE.title,
     template: "%s | MLBB LAB",
   },
-  description:
-    "Mobile Legends: Bang Bangの最新メタ・Tierリスト・ビルドシミュレーター・AIコーチを備えた攻略プラットフォーム",
+  description: SITE.description,
+  applicationName: SITE.name,
+  keywords: [
+    "MLBB",
+    "モバイルレジェンド",
+    "モバレ",
+    "Mobile Legends",
+    "攻略",
+    "ビルド",
+    "カウンター",
+    "Tierリスト",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    locale: SITE.locale,
+    title: SITE.title,
+    description: SITE.description,
+    url: SITE.url,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE.title,
+    description: SITE.description,
+  },
 };
 
 export const viewport: Viewport = {

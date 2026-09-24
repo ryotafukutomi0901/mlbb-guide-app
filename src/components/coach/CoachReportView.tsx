@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   Crosshair,
   Lightbulb,
-  Play,
   ShieldQuestion,
   Swords,
   Wrench,
@@ -189,7 +188,6 @@ export function CoachReportView({
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-text-muted">{insight.text}</p>
                   </div>
-                  <Play size={14} className="ml-auto mt-2 shrink-0 text-text-faint" />
                 </div>
               );
             })}
@@ -247,11 +245,12 @@ export function CoachReportView({
                 )}
               >
                 <div className="relative flex h-20 items-center justify-center bg-gradient-to-br from-surface-2 to-bg-deep">
-                  <Play
-                    size={22}
-                    className={cn("transition-colors", active ? "text-primary" : "text-text-faint group-hover:text-text-muted")}
-                  />
-                  <span className="absolute bottom-1 right-1.5 rounded bg-bg-deep/80 px-1 font-display text-[9px] font-bold text-neon">
+                  <span
+                    className={cn(
+                      "font-display text-lg font-black transition-colors",
+                      active ? "text-primary" : "text-text-faint group-hover:text-text-muted"
+                    )}
+                  >
                     {formatClock(scene.atSeconds)}
                   </span>
                 </div>

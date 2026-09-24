@@ -16,7 +16,10 @@ import { getPlayerProfile } from "@/repositories/matchRepository";
 import { getOwnedSkins } from "@/repositories/skinRepository";
 import { SkinCard } from "@/components/skin/SkinCard";
 
-export const metadata: Metadata = { title: "プロフィール" };
+export const metadata: Metadata = {
+  title: "プロフィール",
+  robots: { index: false, follow: true },
+};
 
 export default function ProfilePage() {
   const profile = getPlayerProfile();
@@ -92,7 +95,7 @@ export default function ProfilePage() {
               return (
                 <Link
                   key={main.slug}
-                  href={`/characters/${main.slug}`}
+                  href={`/heroes/${main.slug}`}
                   className="flex items-center gap-3 rounded-xl p-1.5 transition-colors hover:bg-surface-hover/50"
                 >
                   <HeroAvatar name={hero.name} role={hero.roles[0]} slug={main.slug} size="md" />

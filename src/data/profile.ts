@@ -159,7 +159,7 @@ export const MATCH_HISTORY: MatchRecord[] = [
       { heroSlug: "tigreal", playerName: "PullMaster", kda: [2, 4, 16], gold: 7654, damage: 35678 },
       { heroSlug: "brody", playerName: "OneShot", kda: [7, 4, 6], gold: 10234, damage: 87654 },
       { heroSlug: "cecilion", playerName: "BatLord", kda: [6, 3, 9], gold: 9876, damage: 91234 },
-      { heroSlug: "bennett", playerName: "FlowerPow", kda: [1, 2, 14], gold: 6543, damage: 19876 },
+      { heroSlug: "floryn", playerName: "FlowerPow", kda: [1, 2, 14], gold: 6543, damage: 19876 },
     ],
   },
 ];

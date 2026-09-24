@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { SettingsPanel } from "@/components/settings/SettingsPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "設定" };
+export const metadata: Metadata = {
+  title: "設定",
+  robots: { index: false, follow: true },
+};
 
 export default function SettingsPage() {
   return (

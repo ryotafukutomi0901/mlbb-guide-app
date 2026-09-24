@@ -9,7 +9,7 @@ import { TierBadge } from "@/components/ui/Badge";
 import { FilterChips } from "@/components/ui/FilterChips";
 import { ROLE_LABEL, type Role } from "@/data/types";
 import { formatSigned } from "@/lib/format";
-import { getAllHeroes, getHeroMeta } from "@/repositories/heroRepository";
+import { getHeroesWithMeta } from "@/repositories/heroRepository";
 import { cn } from "@/lib/utils";
 
 const ROLE_OPTIONS = (Object.keys(ROLE_LABEL) as Role[]).map((r) => ({
@@ -31,9 +31,9 @@ export function MetaRankingTable() {
   const [metric, setMetric] = useState<MetricKey>("winRate");
 
   const rows = useMemo(() => {
-    return getAllHeroes()
+    return getHeroesWithMeta()
       .filter((h) => role === "all" || h.roles.includes(role))
-      .map((hero) => ({ hero, meta: getHeroMeta(hero.slug) }))
+      .map((hero) => ({ hero, meta: hero.meta }))
       .sort((a, b) => b.meta[metric] - a.meta[metric])
       .slice(0, 30);
   }, [role, metric]);
@@ -69,7 +69,7 @@ export function MetaRankingTable() {
           return (
             <Link
               key={hero.slug}
-              href={`/characters/${hero.slug}`}
+              href={`/heroes/${hero.slug}`}
               className="group relative flex items-center gap-3 border-b border-border/40 px-4 py-3 transition-colors last:border-0 hover:bg-surface-hover/40 md:gap-4"
             >
               <span

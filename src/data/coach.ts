@@ -104,7 +104,7 @@ export const COACH_REPORTS: CoachReport[] = [
     insights: [
       { atSeconds: 152, kind: "warning", text: "敵リン(Lv4)に対してレベル3で仕掛けています。レベル差のある交戦は避けましょう。" },
       { atSeconds: 274, kind: "improve", text: "デス後のリスポーン直後に単独でジャングルへ侵入しています。味方との合流を待つべきです。" },
-      { atSeconds: 431, kind: "build", text: "敵カリーの真実ダメージにはHPよりも回避・シールド系が有効です。" },
+      { atSeconds: 431, kind: "build", text: "敵キャリーの真実ダメージにはHPよりも回避・シールド系が有効です。" },
       { atSeconds: 592, kind: "judgement", text: "この人数不利での集団戦参加は避け、サイドプッシュで圧力をかける選択がありました。" },
       { atSeconds: 810, kind: "good", text: "冷静なタワー下防衛。ミニオン処理の優先順位が正確でした。" },
     ],
@@ -124,11 +124,11 @@ export const COACH_REPORTS: CoachReport[] = [
       { label: "集団戦", score: 62, comment: "エンゲージのタイミングは良いが、継続火力が不足。" },
     ],
     buildAdvice: [
-      { itemSlug: "wind-of-nature", reason: "カリーの真実ダメージを物理無効でしのぐ" },
+      { itemSlug: "wind-of-nature", reason: "キャリーの真実ダメージを物理無効でしのぐ" },
       { itemSlug: "immortality", reason: "集団戦での復活で数的不利を緩和する" },
     ],
     recommendedBuild: ["warrior-boots", "endless-battle", "berserkers-fury", "wind-of-nature", "blade-of-despair", "immortality"],
-    draftReview: "敵のリン+カリーは後半スケール型。序盤に有利を作れなかった時点で不利が確定しやすい構成でした。序盤に強いドラフトなら、10分までにオブジェクトを集める意識を。",
+    draftReview: "敵のリン+キャリーは後半スケール型。序盤に有利を作れなかった時点で不利が確定しやすい構成でした。序盤に強いドラフトなら、10分までにオブジェクトを集める意識を。",
     winRateDelta: 12.1,
     practiceMenu: [
       { title: "レベル差の把握", description: "交戦前に敵のレベルとアイテムを確認する癖をつけましょう。" },

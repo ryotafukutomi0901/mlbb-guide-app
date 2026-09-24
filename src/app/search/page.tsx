@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "検索" };
+export const metadata: Metadata = {
+  title: "検索",
+  robots: { index: false, follow: true },
+};
 
 export default function SearchPage() {
   return (

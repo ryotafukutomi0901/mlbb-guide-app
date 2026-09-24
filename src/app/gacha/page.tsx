@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { GachaSimulator } from "@/components/gacha/GachaSimulator";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "ガチャシミュレーター" };
+export const metadata: Metadata = {
+  title: "ガチャシミュレーター",
+  robots: { index: false, follow: true },
+};
 
 export default function GachaPage() {
   return (

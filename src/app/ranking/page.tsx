@@ -8,7 +8,13 @@ import { getRankings } from "@/repositories/contentRepository";
 import { getHeroBySlug } from "@/repositories/heroRepository";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "ランキング" };
+export const metadata: Metadata = {
+  title: "ランキング",
+  description:
+    "MLBB(モバイルレジェンド)のプレイヤーランキング。上位プレイヤーの使用ヒーローと戦績を確認できます。",
+  alternates: { canonical: "/ranking" },
+  openGraph: { title: "ランキング | MLBB LAB", description: "MLBB(モバイルレジェンド)のプレイヤーランキング。上位プレイヤーの使用ヒーローと戦績を確認できます。", url: "/ranking" },
+};
 
 const PODIUM_STYLE = [
   "border-gold/60 bg-gold/10 shadow-[0_0_28px_rgba(240,180,41,0.2)]",
@@ -60,7 +66,7 @@ export default function RankingPage() {
                 const hero = getHeroBySlug(slug);
                 if (!hero) return null;
                 return (
-                  <Link key={slug} href={`/characters/${slug}`} title={hero.name}>
+                  <Link key={slug} href={`/heroes/${slug}`} title={hero.name}>
                     <HeroAvatar name={hero.name} role={hero.roles[0]} slug={slug} size="sm" />
                   </Link>
                 );
@@ -99,7 +105,7 @@ export default function RankingPage() {
                 const hero = getHeroBySlug(slug);
                 if (!hero) return null;
                 return (
-                  <Link key={slug} href={`/characters/${slug}`} title={hero.name}>
+                  <Link key={slug} href={`/heroes/${slug}`} title={hero.name}>
                     <HeroAvatar name={hero.name} role={hero.roles[0]} slug={slug} size="xs" />
                   </Link>
                 );

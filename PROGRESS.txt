@@ -1,6 +1,219 @@
 MLBB Companion Platform (MLBB LAB) 進捗まとめ
-更新日: 2026-07-13
-状態: ゲームランチャーUIへの全面刷新＋フェーズ2機能(全29画面相当)完成。lint/型/ビルド/実機動作すべて確認済み。
+更新日: 2026-09-25
+状態: Phase 1〜3(課金除く)・Phase 4 Part A(画像アセット)・B1(AI層のVision対応)が完了。
+      次は Phase 4 B2(スクショ→試合データ変換)から再開。
+      再設計仕様は docs/redesign/ に全文書化(モデル非依存のハンドオフ文書)。
+
+────────────────────────────────────
+■ 2026-08-31 全面監査 → 再設計(Phase 1完了)
+────────────────────────────────────
+【監査結果】総合47/100。UI78/レスポンシブ82/アーキテクチャ70は良好だが、
+  SaaS設計15・マネタイズ10・SEO20・AIコーチ30。報告書:
+  https://claude.ai/code/artifact/e305ecf8-fca8-4444-9180-5899ab9fb1ba
+
+【Phase 1で実施(承諾済み)】
+1. ゲームデータの信頼性回復
+   ・捏造ヒーロー「ヘルムート」を削除(実在133体リストに不在)
+   ・ロースターを107体→実在133体に(全133体の画像は既に配置済みだった)
+   ・日本語名を「日本語クライアント公式表記」に統一(3ソース照合)
+     例: ミヤ→マイヤ、ティグレアル→ティグラル、ハヤブサ→隼、グシオン→ゴセン、
+         レイラ→ライラ、アカイ→ガイ、ジロン→子龍、ジョンソン→ジェイソン
+     旧表記は aliases に退避し検索でヒットさせる
+   ・スキル名35件の創作を実データへ修正(mljpwiki/wikiwikiで9体分を照合)
+     例: アルカード「パクトオブザデュエリスト」→「チェイス」
+   ・全ヒーローにレーンを付与(gold/exp/mid/jungle/roam)
+   ・正準データ docs/redesign/data/heroes-canonical.json を唯一の情報源にし、
+     scripts/gen/heroes.mjs で src/data/heroes.roster.ts を生成(誰が実装しても同一出力)
+2. 乱数生成データの全廃(最重要)
+   ・カウンター相性の seededPick 生成を削除 → 理由付きキュレーション(CounterEdge型)のみ表示
+   ・勝率/ピック率/バン率の seededFloat 生成を削除 → CURATED_META(29体)のみ表示
+   ・未整備は「準備中」と正直に表示。数値には DataBadge(編集部評価/Patch/更新日)を必ず添える
+3. slug正規化(9件): hylos2→hayabusa, belerick2→atlas, atlas→barats, bennett→floryn,
+   auloz→fredrinn, fredrinn2→chip, popolkupa→popol-and-kupa, yisunshin→yi-sun-shin
+   dynamicParams=false で旧slugは404
+4. UXバグ修正
+   ・スプラッシュのフリーズ(非表示タブでGSAP停止→永久表示+スクロールロック)を修正
+     document.hidden時は非表示 / 6秒フェイルセーフ / タップスキップ / visibilitychange対応
+   ・全ページ遷移の人工0.62秒ローダーを撤廃(フェードインのみに)
+5. ダミーUIの整理
+   ・動かないボタン(動画アップロード/新しい分析/シーン再生)を削除
+   ・偽の通貨表示(ジェム2,840/チケット56.8k)を削除
+   ・コーチ画面に「サンプルレポート」の明示
+6. SEO技術基盤
+   ・sitemap.ts(ヒーロー133件含む)/ robots.ts / metadataBase / OGP / Twitter Card
+   ・全一覧ページに固有description + canonical、個人向けページはnoindex
+   ・ヒーロー詳細に固有description + JSON-LD(BreadcrumbList + WebPage)
+
+【検証(2026-08-31)】
+・node scripts/qa/verify-data.mjs → ✓(133体・画像・slug参照・鮮度メタ)
+・npx tsc --noEmit → 0 / npm run lint → 0 / npm run build → 成功(静的179ページ、151から増加)
+・node scripts/qa/audit.mjs → 26ルート×3VP(375/768/1440)=78画面で
+  横オーバーフロー0件・コンソールエラー0件
+・実機: 隼(Hayabusa)表示・旧slug404・sitemap 133件・JSON-LD 2ブロック・カウンター理由表示
+
+────────────────────────────────────
+■ 2026-09-01 Phase 2完了(SEO構造 + 情報設計再編)
+────────────────────────────────────
+1. URL再編とセクションページ化(SEOの核)
+   ・/characters → /heroes(国際標準)。旧URLは308恒久リダイレクト
+   ・クライアントタブ7枚 → URLを持つ5セクションのServer Componentページへ分割
+     /heroes/[slug](概要) /skills /build /counters /stats
+     → スキル名・装備・カウンター理由がすべてHTMLに出力される(JSなしで読める)
+   ・各セクションに固有のtitle/description、BreadcrumbList + WebPageのJSON-LD
+     例: 「ライラのおすすめビルド | MLBB LAB」「ライラのカウンター | MLBB LAB」
+2. レーン軸の情報設計
+   ・/tier-list/[lane] を5レーン分SSG生成(gold/exp/mid/jungle/roam)
+   ・ヒーロー一覧にレーンフィルタ追加(主レーン+altLanes対応)
+3. i18n基盤(器のみ。翻訳の一括公開はしない)
+   ・src/i18n/config.ts(LOCALES/LOCALE_READY/localePath/alternateLanguages)
+   ・src/i18n/dictionaries.ts(ja/en のUI辞書)
+   ・全攻略ページに hreflang(ja/en/x-default)+ canonical を出力
+   ・/en/ の実ルートは未作成(LOCALE_READY.en=false)。解説文の英訳が揃うPhase 4で公開
+4. AIコーチへの内部リンク収束
+   ・CoachCTAを全ヒーローセクションページ末尾に設置(攻略→自分の試合の分析へ)
+5. 鮮度表示の統一
+   ・カウンター/ビルドのDataBadgeをパッチデータ由来に(ハードコード排除)
+
+【検証(2026-09-01)】
+・npx tsc --noEmit → 0 / npm run lint → 0 / npm run build → 成功(静的220ページ、179から増加)
+・node scripts/qa/verify-data.mjs → ✓
+・node scripts/qa/audit.mjs → 30ルート×7VP(320/375/414/768/820/1440/1920)=210画面で
+  横オーバーフロー0件・コンソールエラー0件
+・実機: /characters/layla → /heroes/layla の308リダイレクト、
+  ビルド/カウンター/スキル各ページの本文がHTMLに存在、hreflang3件出力、
+  sitemap 209URL(ヒーロー169・レーン5)
+
+────────────────────────────────────
+■ 2026-09-01 Phase 3(AI Coaching SaaS化)— 課金以外完了
+────────────────────────────────────
+1. AIコーチの実配線(主軸プロダクト)
+   ・POST /api/coach/analyze … zod検証 → プラン判定 → quota判定 → Knowledge注入 →
+     AI実行 → zod再検証 → usage記録 → (ログイン時)coach_reports保存
+   ・src/lib/coach/ に schema/models/context/quota/analyze/sample/freeTrial を新設
+   ・Knowledge Layerは「この試合に必要な分だけ」注入(対象ヒーロー+敵味方+現行パッチ)
+     → 133体全量を渡さないことでトークン原価を抑える
+   ・モデルルーティング: フル分析=claude-sonnet-5 / 追質問=haiku-4.5 /
+     ビルド・カウンター提案はKnowledgeから生成しAI不使用(原価ゼロ)
+   ・AI出力はzod検証に2回失敗したら502。検証を通らないレポートは表示しない
+   ・装備slugは sanitize() でKnowledgeに存在するものだけに限定
+2. 安全性
+   ・ユーザー自由記述は <player_notes> で囲い、システムプロンプトで
+     「指示として解釈しない」と明示(プロンプトインジェクション対策)
+   ・APIキーはサーバーのみ。route handlerは runtime = "nodejs"
+   ・Supabase RLSで自分のデータ以外は取得不可(supabase/migrations/0001_init.sql)
+3. 未設定環境での動作(重要)
+   ・AIキー未設定 → source:"sample" + notice を返し、UIで「サンプルレポート」と明示。
+     AI処理を装わない
+   ・Supabase未設定 → 未ログイン扱い。/dashboard は「準備中」を表示
+   ・いずれもビルド・検証が通る
+4. Free → Pro のUX
+   ・/coach を製品紹介 + 無料体験フォーム + 結果表示に刷新
+     結果は スコア → 最大の課題 → 最大の強み/今日のフォーカス → 次の1試合でやること を全文表示
+   ・その先は LockedSection でロックし、「何ができるか」ではなく
+     「弱点の推移を追う」「あなた専用の練習メニュー」など“何が上手くなるか”で提示
+   ・quota超過時は402 → 登録/プラン導線へ
+   ・/pricing(比較表)と /dashboard(Personal Command Center)を新設
+5. DB設計(supabase/migrations/0001_init.sql)
+   ・profiles / matches / coach_reports / usage_events + RLS + 新規ユーザーtrigger
+
+【未実施(意図的な保留)】
+・Stripe課金: 価格が未確定のため実装せず。/pricing のProは「準備中」と正直に表示。
+  価格確定後に api/billing/checkout と webhook を追加する(判断理由は07_DECISION_LOG.md)
+
+【検証(2026-09-01)】
+・npx tsc --noEmit → 0 / npm run lint → 0 / npm run build → 成功
+・node scripts/qa/verify-data.mjs → ✓
+・node scripts/qa/audit.mjs → 32ルート×7VP=224画面で 横オーバーフロー0・コンソールエラー0
+・API実測: 正常系=サンプル明示で200 / 不正入力=400(result,kills,durationMinutes を検出) /
+  壊れたJSON=400
+・ブラウザ実測: /coach でフォーム送信 → 結果表示 → Proロック → 「別の試合を分析する」
+  の一連が動作
+
+────────────────────────────────────
+■ 2026-09-02 Supabase実接続 + 認証UI(Phase 3完了 / 課金除く)
+────────────────────────────────────
+1. 実プロジェクトへ接続(Supabase MCP経由)
+   ・プロジェクト: ryotafukutomi0901's Project(ap-northeast-1・稼働中)
+   ・Phase 3スキーマを適用(profiles/matches/coach_reports/usage_events + RLS + trigger)
+   ・.env.local に URL と publishable key を設定(.env* はgit管理外を確認済み)
+2. 実接続して判明した問題を修正(いずれも実DBがないと出なかった)
+   ・usage_events へのINSERTがRLSで拒否 → service roleクライアント経由に修正
+     (SUPABASE_SERVICE_ROLE_KEY は手動設定が必要。MCPは秘密鍵を返さない)
+   ・SECURITY DEFINER関数がREST APIから実行可能 → EXECUTE剥奪。security advisor 0件
+3. 認証UI(プロダクトループの完成)
+   ・/login(ログイン/新規登録タブ)、/auth/callback、/auth/signout
+   ・src/proxy.ts でセッション更新(Next.js 16でmiddleware→proxyに改称)
+   ・TopBarにログイン状態を表示
+   ・重要: AuthMenuをServer Componentにすると全ページが動的化し静的226→2に退化したため、
+     Client Componentに変更して静的生成を維持
+
+【検証(2026-09-02)】
+・tsc 0 / lint 0 / build 成功(静的226ページ維持、動的は7=API・認証のみ)
+・audit.mjs → 33ルート×7VP=231画面で オーバーフロー0・コンソールエラー0
+・RLS実測: 匿名でprofiles読み取り→空配列、usage_events書き込み→401で拒否
+・security advisor: 0件
+・API実測: source=sample / plan=anon / 不正入力400
+
+────────────────────────────────────
+■ 2026-09 Phase 4 Part A完了(画像アセット) / Part B未着手
+────────────────────────────────────
+【完了: Part A — 画像アセット58枚を取得・配線】
+・取得基盤: docs/redesign/data/assets-manifest.json + scripts/gen/assets.mjs
+  → public/images/ へ取得し src/data/images.generated.ts を生成(冪等・再実行可)
+  再実行: node scripts/gen/assets.mjs [--force]
+・エンブレム7枚: 新規に画像対応(Emblem型は変更せずimagesマップで対応)
+  components/ui/EmblemIcon.tsx を新設。画像なし時は従来の色バッジにフォールバック
+  /compendium/emblems・HeroBuild・HeroOverview に配線済み
+・ジャングル8枚: JungleIconが既にJUNGLE_IMAGESを読んでいたため自動反映
+・スキル36枚(詳細データのある9体×4スロット): HeroSkillsは変更不要で自動反映
+・アイテム7枚: 不足8件のうち7件を取得(wish-bracelet は英語名を確定できず見送り)
+・verify-data.mjs に画像カバレッジ検査を追加(検査9・10)
+
+【検証(Part A時点)】
+・node scripts/qa/verify-data.mjs → ✓(ヒーロー133体 / アセット58件 / slug参照 / 鮮度メタ)
+・npx tsc --noEmit → 0 / npm run lint → 0 / npm run build → 成功(静的226ページ維持)
+・ブラウザ実測: /compendium/emblems と /heroes/layla/skills で画像表示を確認
+・node scripts/qa/audit.mjs → 33ルート×7VP=231画面で 横オーバーフロー0・コンソールエラー0
+
+【完了: B1 — AI層のVision対応(2026-09-25)】
+・src/services/ai/types.ts: AIMessage.content を string | AIContentPart[] に拡張
+  画像は中立型 { type:"image", mediaType, data(base64) }。既存の文字列呼び出しは無変更
+・src/services/ai/content.ts(新規): toParts / textOnly / toOpenAIMessages / errorDetail
+・4プロバイダを各ネイティブ形式に対応(OpenRouter・OpenAI=image_url / Gemini=inlineData /
+  Claude=base64 image ブロック)
+・Claude プロバイダを公式SDK(@anthropic-ai/sdk 0.128.0)へ移行。refusal を例外化、
+  Opus 5 ではサーバー側フォールバックを付与、現行モデルに temperature を送らない
+・Phase 3 起因の実行時バグ3件を修正(OpenRouter公開APIで照合して発覚):
+  追質問ルートのslugが存在しない / sonnet-5 に非対応の temperature を送信 /
+  sonnet-5 の単価が旧値で原価を5割過大計上
+・検証: node scripts/qa/ai-wire.mjs → 20/20(fetch差し替えで送信形式を検査。キー不要)
+  tsc 0 / lint 0 / build 成功(静的226維持)/ SDKとキー名はクライアント非混入 /
+  既存コーチAPI: 正常系=sample, 不正入力=400
+
+【次回ここから: Part B — 残り B2 → B4 → B3】
+計画は /Users/ryouta/.claude/plans/mlbb-jiggly-wand.md の Part B。実装順は B1→B2→B4→B3。
+ B2. src/lib/coach/vision.ts + src/app/api/coach/parse-screenshot/route.ts
+     画像 → 既存 coachInputSchema に適合するJSONをstructured outputで抽出。
+     ヒーロー名は heroes-canonical.json の ja/en/aliases で正準slugへ解決。
+     読めなかった項目は null。推測で埋めない。画像は保存しない。
+     画像は B1 の中立型 { type:"image", mediaType, data } で provider.complete に渡す。
+     OpenRouter の sonnet-5 は structured outputs 対応(公開APIで確認済み)。
+ B4. models.ts に screenshot_parse ルート追加 + quota.ts に上限追加
+     ★DBマイグレーションが必要: usage_events.kind の check制約が
+       ('match_review','followup') 固定。'screenshot_parse' を追加する
+       (Supabase MCP の apply_migration。project_id = sxfdxnyfftrfvirbzbkz)
+ B3. MatchAnalyzerForm.tsx に画像アップロード欄 → 解析 → フォーム自動入力(確認・修正可)
+
+【調査で確定済み(再調査不要)】
+・MLBB公式APIは存在しない。個人戦績はスクショOCRでしか取れない
+  (トップアップ照合 User ID+Zone ID はニックネームのみ)。詳細はメモリ mlbb-no-official-api
+
+────────────────────────────────────
+■ 次フェーズ(承諾済み・未着手)
+────────────────────────────────────
+・Stripe課金(価格確定後): api/billing/checkout + webhook、/pricing のPro有効化
+・Phase 4: en公開、Guideコンテンツ、Progress/Weekly Review、PWA
+・仕様の読み方は docs/redesign/README.md。実装中の判断は 07_DECISION_LOG.md に追記する。
 
 ────────────────────────────────────
 ■ プロジェクト概要
@@ -63,7 +276,34 @@ src/
 /search              グローバル検索(ヒーロー/アイテム/スキン/スペル/エンブレム横断+全ページクイックアクセス)
 /settings            設定(演出軽減、地域、ローカルデータ初期化)
 /privacy             プライバシーポリシー
-+ Splash(セッション初回のみGSAP演出) / loading.tsx / not-found.tsx(404)
++ Splash(セッション初回のみ: entrance画像10枚から生成したライブ壁紙mp4をランダム再生+GSAPロゴ演出)
++ ページ遷移ローダー(旧スプラッシュのロゴ演出をコンパクト化、全ページ切替時に約0.6秒表示)
++ loading.tsx / not-found.tsx(404)
+
+────────────────────────────────────
+■ ライブ壁紙スプラッシュ(2026-07-15)
+────────────────────────────────────
+・public/videos/splash/splash-01〜10.mp4 (各12秒シームレスループ/720p/約300-440KB)
+  entrance画像からffmpegのzoompan(Ken Burns)+逆再生連結で生成。
+  再生成コマンド例はgit履歴参照。差し替えはsrc/lib/assets.tsのSPLASH_VIDEOS。
+・SplashScreenがセッション初回にランダム1本を背景再生(sessionStorage: mlbb:splash-seen)
+
+────────────────────────────────────
+■ 名称の公式日本語表記化(2026-07-15)
+────────────────────────────────────
+・ヒーロー28件を修正(例: エスタス→エステス、ディジー→ディギー、バランス→バラッツ、
+  アバレン→フレドリン、フリオセル→フローリン、ヘイヤーテ→ハヤブサ、カリー→キャリー、
+  ティグレル→ティグレアル、エディス→イーディス等)。複数の日本語Wiki/攻略サイトで照合。
+・装備35件を日本版クライアント表記へ(wikiwiki.jp+Gamerchの2ソースで一致確認。
+  例: ブレード・オブ・デスペア→ディスペアブレイド、バーサーカーズ・フューリー→バーサーク、
+  ハースクロー→ブラッドクロウ、ゴールデンスタッフ→如意棒、イモータリティ→イモータル、
+  アンティーク・キュイラス→上古の鎧、クロック・オブ・デスティニー→デスティニー等)
+・公式表記が確認できなかったもの(暫定カタカナのまま): マレフィックロア、アテナシールド、
+  ヘプタシーズブレイド、レディアントアーマー、トワイライトアーマー、ウィッシングランタン、
+  スカイピアサー、マレフィックガン、グレートドラゴンスピア、オアシスフラスコ、
+  チャスティスポールドロン、中間素材類。公式情報が取れ次第items.tsのnameのみ更新。
+・アイテム総数63(全20新規アイテム挿入完了、55画像すべて割当済み。
+  画像なしは中間素材等8種のみ)
 
 ────────────────────────────────────
 ■ データについての注意

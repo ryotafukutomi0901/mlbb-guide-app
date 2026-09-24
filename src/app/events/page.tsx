@@ -8,7 +8,13 @@ import { bannerImage } from "@/lib/assets";
 import { hashSeed } from "@/lib/seed";
 import { getEvents } from "@/repositories/contentRepository";
 
-export const metadata: Metadata = { title: "イベント" };
+export const metadata: Metadata = {
+  title: "イベント",
+  description:
+    "MLBB(モバイルレジェンド)の開催中・開催予定イベントと報酬をまとめて確認できます。",
+  alternates: { canonical: "/events" },
+  openGraph: { title: "イベント | MLBB LAB", description: "MLBB(モバイルレジェンド)の開催中・開催予定イベントと報酬をまとめて確認できます。", url: "/events" },
+};
 
 const CATEGORY_LABEL: Record<string, string> = {
   collab: "コラボ",

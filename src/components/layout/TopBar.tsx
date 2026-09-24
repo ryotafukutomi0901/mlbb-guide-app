@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Gem, Search, Ticket } from "lucide-react";
+import { Search } from "lucide-react";
+import { AuthMenu } from "@/components/auth/AuthMenu";
 import { HeroAvatar } from "@/components/hero/HeroAvatar";
 import { PLAYER_PROFILE } from "@/data/profile";
-import { formatCompact } from "@/lib/format";
 
 export function TopBar() {
   return (
@@ -39,14 +39,7 @@ export function TopBar() {
             <Search size={16} />
           </Link>
 
-          <div className="hidden items-center gap-1.5 rounded-xl border border-border bg-surface/60 px-3 py-1.5 sm:flex">
-            <Gem size={14} className="text-neon" />
-            <span className="font-display text-xs font-bold">2,840</span>
-          </div>
-          <div className="hidden items-center gap-1.5 rounded-xl border border-border bg-surface/60 px-3 py-1.5 sm:flex">
-            <Ticket size={14} className="text-gold" />
-            <span className="font-display text-xs font-bold">{formatCompact(56800)}</span>
-          </div>
+          <AuthMenu />
 
           <Link
             href="/profile"
