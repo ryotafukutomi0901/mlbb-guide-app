@@ -122,6 +122,16 @@ for (const slug of detailSlugs) {
   }
 }
 
+// 11. 画像パスの直書き参照がすべて実在すること
+// (削除済みのバナー画像を参照し続け、4体のページでバナーが欠けていた実例があったため)
+for (const file of srcFiles) {
+  const body = fs.readFileSync(file, "utf8");
+  for (const m of body.matchAll(/["'`](\/(?:images|videos)\/[^"'`$]+)["'`]/g)) {
+    const target = path.join(ROOT, "public", decodeURIComponent(m[1]));
+    check(fs.existsSync(target), `${path.relative(ROOT, file)}: 参照先が無い ${m[1]}`);
+  }
+}
+
 if (errors.length) {
   console.error(`✗ ${errors.length}件の問題:\n` + errors.map((e) => `  - ${e}`).join("\n"));
   process.exit(1);
