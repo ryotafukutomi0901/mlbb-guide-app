@@ -1,7 +1,10 @@
 // docs/redesign/data/assets-manifest.json を読み、Fandom Wiki から画像を取得して
 // public/images/{category}/ へ配置し、src/data/images.generated.ts を出力する。
 //
-// 冪等: 取得済みファイルはスキップする。失敗しても止まらず、最後に一覧で報告する。
+// 冪等: 取得済みファイルは再取得しない(ただし未正規化ならその場でPNGへ正規化する)。
+// 失敗しても止まらず、最後に一覧で報告する。
+// 注意: 一括取得を繰り返すとFandomのCDNがボット判定(403 "Just a moment...")を返す。
+// その判定を回避する細工(Referer偽装等)はしない。時間を置くか、手動で取得して配置する。
 // 実行: node scripts/gen/assets.mjs [--force]
 //
 // 画像の著作権はMoonton社に帰属する(本サイトは非公式ファンサイト)。
@@ -9,6 +12,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 
 const ROOT = path.resolve(import.meta.dirname, "../..");
 const MANIFEST = path.join(ROOT, "docs/redesign/data/assets-manifest.json");
@@ -41,39 +45,74 @@ async function resolveUrls(sources) {
   return urls;
 }
 
+/** アイコンとして十分な上限。これより大きい画像は縮小する */
+const MAX_EDGE = 256;
+const MAX_BYTES = 64 * 1024;
+const PNG_SIGNATURE = "89504e470d0a1a0a";
+
+/**
+ * FandomのCDNは .png のURLにもWebPを返し、元画像に1MB超のメタデータを含むものもある。
+ * 静止画の本物のPNGへ正規化する(sharpは既定でメタデータを落とし、先頭フレームだけを読む)。
+ */
+async function toStaticPng(raw) {
+  return sharp(raw)
+    .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside", withoutEnlargement: true })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+}
+
+/** 手元のファイルが正規化済みでなければ、再取得せずにその場で正規化する */
+async function normalizeInPlace(file) {
+  const buf = fs.readFileSync(file);
+  const isPng = buf.subarray(0, 8).toString("hex") === PNG_SIGNATURE;
+  if (isPng && buf.length <= MAX_BYTES) return false;
+  fs.writeFileSync(file, await toStaticPng(buf));
+  return true;
+}
+
 async function download(url, dest) {
   const res = await fetch(url, { headers: { "User-Agent": "MLBB-LAB/1.0 (asset sync)" } });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const buffer = Buffer.from(await res.arrayBuffer());
-  if (buffer.length === 0) throw new Error("empty body");
+  const raw = Buffer.from(await res.arrayBuffer());
+  if (raw.length === 0) throw new Error("empty body");
+  const png = await toStaticPng(raw);
   fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.writeFileSync(dest, buffer);
-  return buffer.length;
+  fs.writeFileSync(dest, png);
+  return png.length;
 }
 
 const urls = await resolveUrls([...new Set(assets.map((a) => a.source))]);
 
 const done = [];
 const failed = [];
+let normalized = 0;
 
 for (const asset of assets) {
   const dest = path.join(ROOT, "public/images", asset.category, asset.file);
   const publicPath = `/images/${asset.category}/${asset.file}`;
 
   if (!FORCE && fs.existsSync(dest) && fs.statSync(dest).size > 0) {
+    if (await normalizeInPlace(dest)) normalized++;
     done.push({ ...asset, publicPath, skipped: true });
     continue;
   }
+  // 再取得に失敗しても、手元に前回の画像があれば登録は維持する
+  // (取得失敗でレジストリが空になり、画面から画像が消えた実例があったため)
+  const keepExisting = (reason) => {
+    const exists = fs.existsSync(dest) && fs.statSync(dest).size > 0;
+    failed.push({ ...asset, reason: exists ? `${reason}(既存ファイルを維持)` : reason });
+    if (exists) done.push({ ...asset, publicPath, skipped: true });
+  };
   const url = urls.get(asset.source);
   if (!url) {
-    failed.push({ ...asset, reason: "Fandomに該当ファイルが無い" });
+    keepExisting("Fandomに該当ファイルが無い");
     continue;
   }
   try {
     const bytes = await download(url, dest);
     done.push({ ...asset, publicPath, bytes });
   } catch (error) {
-    failed.push({ ...asset, reason: String(error).slice(0, 80) });
+    keepExisting(String(error).slice(0, 80));
   }
 }
 
@@ -112,7 +151,7 @@ fs.writeFileSync(OUT_TS, out);
 
 const fetched = done.filter((a) => !a.skipped).length;
 console.log(
-  `✓ ${done.length}件を登録 (新規取得 ${fetched} / 既存 ${done.length - fetched})  → ${path.relative(ROOT, OUT_TS)}`
+  `✓ ${done.length}件を登録 (新規取得 ${fetched} / 既存 ${done.length - fetched} / うち正規化 ${normalized})  → ${path.relative(ROOT, OUT_TS)}`
 );
 if (failed.length) {
   console.warn(`\n✗ ${failed.length}件が取得できませんでした:`);

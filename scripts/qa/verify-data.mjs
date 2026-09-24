@@ -98,6 +98,18 @@ for (const asset of manifest.assets) {
   );
 }
 
+// 9b. 取得画像は本物のPNGで、アイコンとして妥当な容量であること
+// (拡張子pngのWebPや、1MB超のメタデータ入り画像が混入した実例があったため)
+const PNG_SIGNATURE = "89504e470d0a1a0a";
+const MAX_ASSET_BYTES = 64 * 1024;
+for (const asset of manifest.assets) {
+  const file = path.join(ROOT, "public/images", asset.category, asset.file);
+  if (!fs.existsSync(file)) continue;
+  const buf = fs.readFileSync(file);
+  check(buf.subarray(0, 8).toString("hex") === PNG_SIGNATURE, `PNGではない: ${asset.category}/${asset.file}`);
+  check(buf.length <= MAX_ASSET_BYTES, `容量超過(${Math.round(buf.length / 1024)}KB > 64KB): ${asset.category}/${asset.file}`);
+}
+
 // 10. 詳細データのある9体は全4スロットのスキル画像が揃っていること
 const SLOTS = ["passive", "skill1", "skill2", "ultimate"];
 const detailSlugs = [...heroesSrc.matchAll(/^  ([a-z0-9-]+): \{$/gm)].map((m) => m[1]);
