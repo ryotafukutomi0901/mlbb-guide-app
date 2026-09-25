@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Bot, Target, TrendingUp } from "lucide-react";
+import { DashboardUnavailable } from "@/components/dashboard/DashboardNotice";
 import { Card } from "@/components/ui/Card";
 import { DataPending } from "@/components/ui/DataBadge";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -18,14 +19,16 @@ interface ReportRow {
  */
 export async function DashboardView({ userId }: { userId: string }) {
   const supabase = await createSupabaseServerClient();
-  const { data } = supabase
+  const { data, error } = supabase
     ? await supabase
         .from("coach_reports")
         .select("id, created_at, report")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(10)
-    : { data: null };
+    : { data: null, error: null };
+  // 読めなかったのに「まだ分析記録がありません」と出さない
+  if (error) return <DashboardUnavailable />;
 
   const reports = (data ?? []) as ReportRow[];
   const latest = reports[0];
