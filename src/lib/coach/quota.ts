@@ -1,6 +1,12 @@
 import { createHash } from "node:crypto";
-import { createSupabaseAdminClient, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
-import { createSupabaseServerClient, getSessionUser, type SessionUser } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import {
+  AuthUnavailableError,
+  createSupabaseServerClient,
+  getSessionUserOrThrow,
+  type SessionUser,
+} from "@/lib/supabase/server";
 import type { CoachTask } from "./models";
 
 export type Plan = "anon" | "free" | "pro";
@@ -74,16 +80,25 @@ function nextDay(): string {
   return d.toISOString();
 }
 
+/**
+ * 利用量を数えられない(DB停止・障害・service role 未設定)。
+ * 数えられないまま通すと原価の高いAIを無制限に呼べてしまうので、呼び出し側は 503 で断る。
+ */
+export class UsageUnavailableError extends Error {}
+
 async function countUsage(
   kind: CoachTask,
   since: Date | null,
   identity: { userId?: string; anonKey?: string }
 ): Promise<number> {
-  // 利用量はRLSで本人の行しか読めず、未登録ユーザーの行は誰も読めない。
-  // quota判定は正確さが要るためservice roleで集計する。
-  const supabase = createSupabaseAdminClient() ?? (await createSupabaseServerClient());
-  // DB未設定時は計測できないため、体験を止めずに0扱いにする(本番では必ず設定する)
-  if (!supabase) return 0;
+  // 利用量は RLS で本人の行しか読めず、未登録ユーザーの行は誰も読めない。
+  // 正しく数えるには service role が要る(anon キーで数えると未登録の行が見えず常に0になる)。
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) {
+    // DB自体を使わない開発環境では計測しない
+    if (!isSupabaseConfigured()) return 0;
+    throw new UsageUnavailableError("SUPABASE_SERVICE_ROLE_KEY が未設定のため利用量を数えられません");
+  }
 
   let query = supabase.from("usage_events").select("id", { count: "exact", head: true }).eq("kind", kind);
   query = identity.userId
@@ -92,7 +107,7 @@ async function countUsage(
   if (since) query = query.gte("created_at", since.toISOString());
 
   const { count, error } = await query;
-  if (error) return 0;
+  if (error) throw new UsageUnavailableError(`利用量を数えられません: ${error.message}`);
   return count ?? 0;
 }
 
@@ -152,16 +167,10 @@ export async function recordUsage(params: {
 }): Promise<void> {
   // usage_events にはINSERTポリシーを置いていない(ユーザーが自分の利用量を
   // 書き換えられないようにするため)。書き込みは必ずservice roleで行う。
+  // ここに来る時点でAIの処理は終わっているので、記録に失敗しても結果は返し、失敗をログに残す。
   const supabase = createSupabaseAdminClient();
-  if (!supabase) {
-    if (isSupabaseAdminConfigured()) return;
-    // 本番でキー未設定のまま動かすと利用量が記録されずquotaが機能しない
-    console.warn(
-      "[coach] SUPABASE_SERVICE_ROLE_KEY が未設定のため利用量を記録できません。quotaは機能しません。"
-    );
-    return;
-  }
-  await supabase.from("usage_events").insert({
+  if (!supabase) return; // DBを使わない開発環境(countUsage が通った以上、本番ではここに来ない)
+  const { error } = await supabase.from("usage_events").insert({
     user_id: params.identity.userId ?? null,
     anon_key: params.identity.userId ? null : (params.identity.anonKey ?? null),
     kind: params.task,
@@ -170,6 +179,9 @@ export async function recordUsage(params: {
     output_tokens: params.usage?.outputTokens ?? null,
     cost_usd: params.costUsd ?? null,
   });
+  if (error) {
+    console.error(`[coach] 利用量の記録に失敗しました(${params.task}): ${error.message}`);
+  }
 }
 
 export interface Caller {
@@ -179,9 +191,12 @@ export interface Caller {
   supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
 }
 
-/** リクエストの送り主とプランを特定する(未ログインは IP と UA のハッシュで識別する) */
+/**
+ * リクエストの送り主とプランを特定する(未ログインは IP と UA のハッシュで識別する)。
+ * 認証基盤に届かないときは AuthUnavailableError を投げる(障害中に未ログイン扱いにしない)。
+ */
 export async function identifyCaller(request: Request): Promise<Caller> {
-  const user = await getSessionUser();
+  const user = await getSessionUserOrThrow();
   const supabase = await createSupabaseServerClient();
   let plan: Plan = "anon";
   if (user && supabase) {
@@ -197,6 +212,19 @@ export async function identifyCaller(request: Request): Promise<Caller> {
         ),
       };
   return { user, plan, identity, supabase };
+}
+
+/**
+ * 認証基盤・利用量DBに届かないときのレスポンス本文(503 で返す)。
+ * 数えられないまま原価の高いAIを通さないため、この場合は断る。該当しなければ null。
+ */
+export function serviceUnavailableBody(error: unknown) {
+  if (!(error instanceof AuthUnavailableError) && !(error instanceof UsageUnavailableError)) return null;
+  console.error(`[coach] ${error.message}`);
+  return {
+    error: "service_unavailable" as const,
+    message: "現在一時的に利用できません。時間をおいてもう一度お試しください。",
+  };
 }
 
 /** 上限超過時のレスポンス本文(402 で返す) */

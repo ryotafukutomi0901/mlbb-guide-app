@@ -14,8 +14,9 @@ const LANES = Object.keys(LANE_LABEL) as Lane[];
 export interface AnalyzeResponse {
   source: "ai" | "sample";
   report: CoachReportPayload;
-  plan: string;
-  remaining: number;
+  /** AIで分析したときだけ返る(サンプル表示では利用量を数えないため) */
+  plan?: string;
+  remaining?: number;
   notice?: string;
 }
 

@@ -1,14 +1,18 @@
 import { COACH_JSON_SPEC, coachReportSchema, type CoachInput, type CoachReportPayload } from "./schema";
-import { MODEL_ROUTES, estimateCostUsd } from "./models";
+import { MODEL_ROUTES, estimateCostUsd, type CoachTask } from "./models";
 import { buildCoachContext, formatMatchData } from "./context";
 import { SYSTEM_PROMPT } from "@/prompts/systemPrompt";
 import { createAIProvider } from "@/services/ai";
 
-export interface AnalyzeOutcome {
-  report: CoachReportPayload;
+/** AIを呼んだことで発生した原価(成功・失敗を問わず記録する) */
+export interface Spend {
   model: string;
   usage?: { inputTokens: number; outputTokens: number };
   costUsd?: number;
+}
+
+export interface AnalyzeOutcome extends Spend {
+  report: CoachReportPayload;
 }
 
 function stripFence(text: string): string {
@@ -28,7 +32,21 @@ function sanitize(report: CoachReportPayload, allowedItemSlugs: string[]): Coach
 }
 
 export class CoachUnavailableError extends Error {}
-export class CoachInvalidOutputError extends Error {}
+
+/** 再試行しても出力が形式に合わなかった。トークンは消費済みなので原価を持たせる */
+export class CoachInvalidOutputError extends Error {
+  constructor(
+    message: string,
+    readonly spend: Spend
+  ) {
+    super(message);
+  }
+}
+
+/** その用途のAIプロバイダが使える状態か(未設定ならAIを呼ばず、利用量にも触れない) */
+export function isCoachConfigured(task: CoachTask): boolean {
+  return createAIProvider(MODEL_ROUTES[task].provider).isConfigured();
+}
 
 /**
  * 試合データをAIで分析する。
@@ -63,7 +81,15 @@ export async function analyzeMatch(input: CoachInput): Promise<AnalyzeOutcome> {
     { role: "user" as const, content: userPrompt },
   ];
 
-  // 検証に落ちたら1度だけ再試行する
+  // 検証に落ちたら1度だけ再試行する。失敗した回のトークンも合算する(原価の記録漏れを防ぐ)
+  const total = { inputTokens: 0, outputTokens: 0 };
+  let model: string = route.model;
+  const spend = (): Spend => ({
+    model,
+    usage: { ...total },
+    costUsd: estimateCostUsd("match_review", total),
+  });
+
   let lastError: unknown;
   for (let attempt = 0; attempt < 2; attempt++) {
     const result = await provider.complete(messages, {
@@ -72,19 +98,18 @@ export async function analyzeMatch(input: CoachInput): Promise<AnalyzeOutcome> {
       maxTokens: route.maxTokens,
       jsonMode: true,
     });
+    model = result.model;
+    total.inputTokens += result.usage?.inputTokens ?? 0;
+    total.outputTokens += result.usage?.outputTokens ?? 0;
     try {
       const parsed = coachReportSchema.parse(JSON.parse(stripFence(result.content)));
-      return {
-        report: sanitize(parsed, context.allowedItemSlugs),
-        model: result.model,
-        usage: result.usage,
-        costUsd: estimateCostUsd("match_review", result.usage),
-      };
+      return { report: sanitize(parsed, context.allowedItemSlugs), ...spend() };
     } catch (error) {
       lastError = error;
     }
   }
   throw new CoachInvalidOutputError(
-    `AIの出力がスキーマに適合しませんでした: ${String(lastError).slice(0, 200)}`
+    `AIの出力がスキーマに適合しませんでした: ${String(lastError).slice(0, 200)}`,
+    spend()
   );
 }
