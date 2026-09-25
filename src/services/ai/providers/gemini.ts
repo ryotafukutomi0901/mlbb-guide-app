@@ -42,7 +42,9 @@ export class GeminiProvider extends BaseAIProvider {
           generationConfig: {
             maxOutputTokens: options?.maxTokens ?? 4096,
             ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
-            ...(options?.jsonMode ? { responseMimeType: "application/json" } : {}),
+            // Gemini の responseSchema は OpenAPI 方言で共通スキーマと互換がないため、
+            // jsonSchema 指定時も JSON 出力の指定にとどめ、形の検証は受け取った側で行う
+            ...(options?.jsonMode || options?.jsonSchema ? { responseMimeType: "application/json" } : {}),
           },
         }),
       }

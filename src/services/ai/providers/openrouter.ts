@@ -1,5 +1,5 @@
 import { BaseAIProvider } from "../baseProvider";
-import { errorDetail, toOpenAIMessages } from "../content";
+import { errorDetail, openAIResponseFormat, toOpenAIMessages } from "../content";
 import type { AICompletionOptions, AICompletionResult, AIMessage } from "../types";
 
 export class OpenRouterProvider extends BaseAIProvider {
@@ -28,7 +28,7 @@ export class OpenRouterProvider extends BaseAIProvider {
         max_tokens: options?.maxTokens ?? 4096,
         // anthropic/claude-sonnet-5 は temperature 非対応。指定されたときだけ送る
         ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
-        ...(options?.jsonMode ? { response_format: { type: "json_object" } } : {}),
+        ...openAIResponseFormat(options),
       }),
     });
     if (!res.ok) throw new Error(`OpenRouter API error: ${res.status} ${await errorDetail(res)}`);

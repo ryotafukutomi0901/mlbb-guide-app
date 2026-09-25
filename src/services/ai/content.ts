@@ -1,4 +1,4 @@
-import type { AIContentPart, AIMessage } from "./types";
+import type { AICompletionOptions, AIContentPart, AIMessage } from "./types";
 
 /** 文字列でも配列でも部品の配列に揃える */
 export function toParts(content: AIMessage["content"]): AIContentPart[] {
@@ -44,4 +44,17 @@ export async function errorDetail(res: Response): Promise<string> {
   } catch {
     return "";
   }
+}
+
+/** OpenAI互換API(OpenAI・OpenRouter)の response_format を組み立てる */
+export function openAIResponseFormat(options?: AICompletionOptions) {
+  if (options?.jsonSchema) {
+    return {
+      response_format: {
+        type: "json_schema",
+        json_schema: { name: options.jsonSchema.name, strict: true, schema: options.jsonSchema.schema },
+      },
+    };
+  }
+  return options?.jsonMode ? { response_format: { type: "json_object" } } : {};
 }
