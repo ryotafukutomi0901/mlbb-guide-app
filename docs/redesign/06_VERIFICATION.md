@@ -44,6 +44,19 @@ node scripts/qa/vision-parse.mjs   # 43項目。APIキー・通信不要
 サイズ・枚数)、AI呼び出し(構造化出力・再試行・原価の合算・キー未設定時に偽装しないこと)を確かめる。
 **合格条件: `N/N passed` で exit 0。** `src/lib/coach/vision.ts` を触ったら必ず実行する。
 
+## 6-2d. 障害時にAIコーチが「断る」ことの検証(Phase 4 B3前の修正で導入)
+
+```bash
+node scripts/qa/coach-resilience.mjs   # 33項目。APIキー・通信・実アカウント不要(約10秒)
+```
+
+ルートハンドラ(`/api/coach/analyze` `/api/coach/parse-screenshot`)と `proxy` を直接呼び、
+Supabase と OpenRouter は fetch の差し替えで模擬する(`next/headers` は `scripts/qa/fixtures/` の差し替え)。
+確かめること: 利用量を数えられないとき(DB障害・service role 未設定)に 0件と数えず 503 で断り、AIを呼ばない。
+認証基盤の障害・無応答を未ログイン扱いにしない(503)。トークン失効(4xx)は未ログインとして扱う。
+AI未設定なら利用量に触れずサンプルを返す。出力不正で失敗した回も原価を記録する。proxy は無応答でもページ表示を止めない。
+**合格条件: `N/N passed` で exit 0。** `src/lib/coach/` `src/lib/supabase/` `src/proxy.ts` `src/app/api/coach/` を触ったら必ず実行する。
+
 ## 6-3. ブラウザ/レスポンシブ検証
 
 ```bash

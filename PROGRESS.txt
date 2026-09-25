@@ -1,7 +1,8 @@
 MLBB Companion Platform (MLBB LAB) 進捗まとめ
 更新日: 2026-09-26
-状態: Phase 1〜3(課金除く)・Phase 4 Part A・B1・B2 が完了。次は B3(アップロードUI)から再開。
-      GitHub: PR #1(再設計)を作成済み。B2 はブランチ feature/saas-dept-screenshot-import 上で未コミット(CEO確認待ち)。
+状態: Phase 1〜3(課金除く)・Phase 4 Part A・B1・B2 と、障害時の fail closed 修正が完了。次は B3(アップロードUI)。
+      GitHub: PR #1(再設計, base main)・PR #2(B2, base PR #1 のブランチ)を作成済み。
+      障害時の修正はブランチ fix/saas-dept-supabase-resilience 上で未コミット(CEO確認待ち)。
       再設計仕様は docs/redesign/ に全文書化(モデル非依存のハンドオフ文書)。
 
 ────────────────────────────────────
@@ -213,6 +214,15 @@ MLBB Companion Platform (MLBB LAB) 進捗まとめ
 ・DB: 制約の置き換えを実DBで確認 / security advisor 0件
 ・未確認: ログイン状態での読み取り本体と利用上限(テスト用アカウントを作れないため単体テストで代替)、
   実際の画像での読み取り精度(OPENROUTER_API_KEY 設定後)
+
+【完了: 障害時にAIコーチが「断る」修正(B3の前に実施)】
+ ・利用量を数えられない(DB障害・service role 未設定)ときは 503 で断り、AIを呼ばない
+   → 本番公開には SUPABASE_SERVICE_ROLE_KEY が必須(未設定だとAI分析は常に503。サンプル表示は影響なし)
+ ・認証基盤の障害を未ログイン扱いにしない(API 503・ダッシュボード「一時的に表示できません」)
+ ・Supabase への問い合わせに時間の上限(proxy 1.5秒 / サーバー 3秒 / ブラウザ 5秒)
+ ・分析の再試行分・失敗分の原価も記録する
+ ・検証: node scripts/qa/coach-resilience.mjs(33項目)。詳細は 07_DECISION_LOG.md
+ ・CEO判断: 失敗した回も利用上限に数える(現状維持。実キー運用で失敗頻度を見て再判断)
 
 【次回ここから: B3 — フォームに画像アップロード欄を付ける(UI)】
 計画は /Users/ryouta/.claude/plans/mlbb-jiggly-wand.md の Part B。B1・B2(B4の必須部分含む)は完了。
