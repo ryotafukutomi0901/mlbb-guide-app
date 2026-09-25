@@ -34,6 +34,16 @@ node scripts/qa/ai-wire.mjs   # 20項目。APIキー・通信不要(fetchを差�
 壊れていないこと、現行Claudeモデルに temperature を送らないことなどを確かめる。
 **合格条件: `N/N passed` で exit 0。** AI層(`src/services/ai/`)を触ったら必ず実行する。
 
+## 6-2c. スクショ読み取りの検証(Phase 4 B2で導入)
+
+```bash
+node scripts/qa/vision-parse.mjs   # 43項目。APIキー・通信不要
+```
+
+値の対応づけ(範囲外の破棄・ヒーロー名の解決・時間の換算)、アップロード検証(中身での形式判定・
+サイズ・枚数)、AI呼び出し(構造化出力・再試行・原価の合算・キー未設定時に偽装しないこと)を確かめる。
+**合格条件: `N/N passed` で exit 0。** `src/lib/coach/vision.ts` を触ったら必ず実行する。
+
 ## 6-3. ブラウザ/レスポンシブ検証
 
 ```bash

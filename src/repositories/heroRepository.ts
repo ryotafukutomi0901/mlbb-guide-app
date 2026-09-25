@@ -127,3 +127,37 @@ export function searchHeroes(query: string, role?: Role, lane?: Lane): HeroSumma
     return matchesRole && matchesLane && matchesQuery;
   });
 }
+
+/**
+ * 表記ゆれを吸収するための正規化。全角半角(NFKC)・大文字小文字・空白・区切り記号を揃える。
+ * 例: "Yi Sun-shin" / "yi sun shin" / "イ・スンシン" を同じキーにする。
+ */
+function nameKey(name: string): string {
+  return name
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[\s・·.\-_'’&＆]/g, "");
+}
+
+const NAME_INDEX: Map<string, string | null> = (() => {
+  const index = new Map<string, string | null>();
+  const add = (key: string, slug: string) => {
+    if (!key) return;
+    const current = index.get(key);
+    // 2体以上に当たる表記は曖昧なので解決しない(null で塞ぐ)
+    index.set(key, current === undefined || current === slug ? slug : null);
+  };
+  for (const hero of HERO_ROSTER) {
+    for (const name of [hero.name, hero.nameEn, ...(hero.aliases ?? [])]) add(nameKey(name), hero.slug);
+  }
+  return index;
+})();
+
+/**
+ * 画面に書かれたヒーロー名から正準のヒーローを引く。
+ * 完全一致(正規化後)のみ。似た名前への当て推量はしない(誤ったヒーローを当てるより空欄が安全)。
+ */
+export function findHeroByName(name: string): HeroSummary | undefined {
+  const slug = NAME_INDEX.get(nameKey(name));
+  return slug ? getHeroBySlug(slug) : undefined;
+}

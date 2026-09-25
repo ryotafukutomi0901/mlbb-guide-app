@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { analyzeMatch, CoachInvalidOutputError, CoachUnavailableError } from "@/lib/coach/analyze";
-import { anonKeyFrom, checkQuota, recordUsage, type Plan } from "@/lib/coach/quota";
+import { checkQuota, identifyCaller, quotaExceededBody, recordUsage } from "@/lib/coach/quota";
 import { coachInputSchema } from "@/lib/coach/schema";
 import { SAMPLE_COACH_RESULT } from "@/lib/coach/sample";
-import { createSupabaseServerClient, getSessionUser } from "@/lib/supabase/server";
 import { getLatestPatch } from "@/repositories/contentRepository";
 
 export const runtime = "nodejs";
@@ -26,36 +25,12 @@ export async function POST(request: Request) {
   const input = parsed.data;
 
   // 2. 本人特定とプラン判定
-  const user = await getSessionUser();
-  const supabase = await createSupabaseServerClient();
-  let plan: Plan = "anon";
-  if (user && supabase) {
-    const { data } = await supabase.from("profiles").select("plan").eq("id", user.id).maybeSingle();
-    plan = data?.plan === "pro" ? "pro" : "free";
-  }
-  const identity = user
-    ? { userId: user.id }
-    : {
-        anonKey: anonKeyFrom(
-          request.headers.get("x-forwarded-for"),
-          request.headers.get("user-agent")
-        ),
-      };
+  const { user, plan, identity, supabase } = await identifyCaller(request);
 
   // 3. quota判定
   const quota = await checkQuota(plan, "match_review", identity);
   if (!quota.allowed) {
-    return NextResponse.json(
-      {
-        error: "quota_exceeded",
-        plan: quota.plan,
-        used: quota.used,
-        limit: quota.limit,
-        resetAt: quota.resetAt,
-        upgradeUrl: "/pricing",
-      },
-      { status: 402 }
-    );
+    return NextResponse.json(quotaExceededBody(quota), { status: 402 });
   }
 
   // 4. 分析

@@ -1,6 +1,6 @@
 import type { AIProviderName } from "@/services/ai";
 
-export type CoachTask = "match_review" | "followup";
+export type CoachTask = "match_review" | "followup" | "screenshot_parse";
 
 interface ModelRoute {
   provider: AIProviderName;
@@ -24,6 +24,15 @@ export const MODEL_ROUTES: Record<CoachTask, ModelRoute> = {
     model: "anthropic/claude-sonnet-5",
     maxTokens: 4096,
     // 単価はOpenRouterの公開値(2026-09確認)。画像は入力トークンとして課金される
+    inputCostPerMTok: 2,
+    outputCostPerMTok: 10,
+  },
+  // 試合結果スクショから数値を読む。小さな数字の読み違いがそのまま誤分析になるため、
+  // 軽量モデルではなく分析と同じ sonnet-5 を使う(1回あたり約0.7円で、差は誤読の損失より小さい)
+  screenshot_parse: {
+    provider: "openrouter",
+    model: "anthropic/claude-sonnet-5",
+    maxTokens: 1024,
     inputCostPerMTok: 2,
     outputCostPerMTok: 10,
   },
