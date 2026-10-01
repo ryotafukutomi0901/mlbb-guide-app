@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
-import { CoachUnavailableError } from "@/lib/coach/analyze";
-import { checkQuota, identifyCaller, quotaExceededBody, recordUsage } from "@/lib/coach/quota";
+import { CoachUnavailableError, isCoachConfigured } from "@/lib/coach/analyze";
+import {
+  checkQuota,
+  identifyCaller,
+  quotaExceededBody,
+  recordUsage,
+  serviceUnavailableBody,
+  type Caller,
+} from "@/lib/coach/quota";
 import { parseMatchScreenshot, readScreenshotUpload, SCREENSHOT_MAX_BYTES } from "@/lib/coach/vision";
 
 export const runtime = "nodejs";
@@ -23,9 +30,21 @@ export async function POST(request: Request) {
   }
 
   // 2. 本人特定。スクショ読み取りは登録ユーザーのみ(Vision は原価が高い)
-  const { user, plan, identity } = await identifyCaller(request);
+  let caller: Caller;
+  try {
+    caller = await identifyCaller(request);
+  } catch (error) {
+    const unavailable = serviceUnavailableBody(error);
+    if (unavailable) return NextResponse.json(unavailable, { status: 503 });
+    throw error;
+  }
+  const { user, plan, identity } = caller;
   if (!user) {
     return fail(401, "login_required", "スクショ読み取りはログインすると使えます。");
+  }
+  // APIキー未設定なら、画像を受け取る前に断る(読み取ったふりをしない)
+  if (!isCoachConfigured("screenshot_parse")) {
+    return fail(503, "unavailable", "スクショ読み取りは現在利用できません。手入力で分析できます。");
   }
 
   // 3. 入力検証(申告された MIME は信用せず、中身で判定する)
@@ -38,8 +57,15 @@ export async function POST(request: Request) {
   const upload = await readScreenshotUpload(form);
   if (!upload.ok) return fail(upload.status, upload.error, upload.message);
 
-  // 4. 利用上限
-  const quota = await checkQuota(plan, "screenshot_parse", identity);
+  // 4. 利用上限(数えられないときは通さない)
+  let quota;
+  try {
+    quota = await checkQuota(plan, "screenshot_parse", identity);
+  } catch (error) {
+    const unavailable = serviceUnavailableBody(error);
+    if (unavailable) return NextResponse.json(unavailable, { status: 503 });
+    throw error;
+  }
   if (!quota.allowed) return NextResponse.json(quotaExceededBody(quota), { status: 402 });
 
   // 5. 読み取り

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { findHeroByName } from "@/repositories/heroRepository";
 import { createAIProvider } from "@/services/ai";
 import type { AIImageMediaType } from "@/services/ai/types";
-import { CoachUnavailableError } from "./analyze";
+import { CoachUnavailableError, type Spend } from "./analyze";
 import { MODEL_ROUTES, estimateCostUsd } from "./models";
 import { coachInputSchema } from "./schema";
 
@@ -96,12 +96,6 @@ export interface ParsedMatchFields {
   gold: number | null;
   allyHeroes: string[];
   enemyHeroes: string[];
-}
-
-interface Spend {
-  model: string;
-  usage?: { inputTokens: number; outputTokens: number };
-  costUsd?: number;
 }
 
 export type ScreenshotParseOutcome =
