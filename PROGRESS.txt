@@ -1,8 +1,8 @@
 MLBB Companion Platform (MLBB LAB) 進捗まとめ
 更新日: 2026-10-01
 状態: Phase 1〜3(課金除く)・Phase 4 Part A・B1・B2・B3 と、障害時の fail closed 修正が完了。
-      GitHub: PR #1(再設計, base main)・PR #2(B2)・PR #3(障害時の修正)を作成済み(PR #1←#2←#3 の順に積んである)。
-      B3 はブランチ feature/saas-dept-screenshot-upload-ui 上で未コミット(CEO確認待ち)。
+      GitHub: PR #1(再設計)は main にマージ済み。PR #3(障害時の修正)は PR #2 のブランチにマージ済み。
+      未マージ: PR #2(B2, base main)→ PR #4(B3, base PR #2 のブランチ)の順にマージする。
       再設計仕様は docs/redesign/ に全文書化(モデル非依存のハンドオフ文書)。
 
 ────────────────────────────────────
