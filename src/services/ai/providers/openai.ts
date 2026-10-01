@@ -1,5 +1,5 @@
 import { BaseAIProvider } from "../baseProvider";
-import { errorDetail, toOpenAIMessages } from "../content";
+import { errorDetail, openAIResponseFormat, toOpenAIMessages } from "../content";
 import type { AICompletionOptions, AICompletionResult, AIMessage } from "../types";
 
 export class OpenAIProvider extends BaseAIProvider {
@@ -27,7 +27,7 @@ export class OpenAIProvider extends BaseAIProvider {
         messages: toOpenAIMessages(messages),
         max_tokens: options?.maxTokens ?? 4096,
         ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
-        ...(options?.jsonMode ? { response_format: { type: "json_object" } } : {}),
+        ...openAIResponseFormat(options),
       }),
     });
     if (!res.ok) throw new Error(`OpenAI API error: ${res.status} ${await errorDetail(res)}`);

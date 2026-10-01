@@ -28,13 +28,13 @@ const ROWS: Row[] = [
   { label: "ビルドシミュレーター", free: true, pro: true },
   {
     label: "AIコーチのフル分析",
-    free: `月${QUOTA.free.matchReview.perMonth}回`,
-    pro: `1日${QUOTA.pro.matchReview.perDay}回 / 月${QUOTA.pro.matchReview.perMonth}回`,
+    free: `月${QUOTA.free.match_review.perMonth}回`,
+    pro: `1日${QUOTA.pro.match_review.perDay}回 / 月${QUOTA.pro.match_review.perMonth}回`,
   },
   {
     label: "レポートへの追質問",
-    free: `1日${QUOTA.free.followupPerDay}回`,
-    pro: `1日${QUOTA.pro.followupPerDay}回`,
+    free: `1日${QUOTA.free.followup.perDay}回`,
+    pro: `1日${QUOTA.pro.followup.perDay}回`,
   },
   { label: "分析結果の保存と見返し", free: true, pro: true },
   { label: "弱点の推移(過去20試合)", free: false, pro: true },
@@ -72,7 +72,7 @@ export default function PricingPage() {
           </p>
           <p className="mt-2 font-display text-3xl font-black">¥0</p>
           <p className="mt-2 text-xs leading-relaxed text-text-muted">
-            攻略情報の閲覧と、月{QUOTA.free.matchReview.perMonth}回のAI分析。
+            攻略情報の閲覧と、月{QUOTA.free.match_review.perMonth}回のAI分析。
             まずはここから始めて、分析が役に立つかを確かめてください。
           </p>
           <Link

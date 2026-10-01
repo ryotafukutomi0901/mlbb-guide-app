@@ -92,6 +92,24 @@ let refused = false;
 try { await createAIProvider("claude").complete([{ role: "user", content: "x" }]); } catch (e) { refused = e?.constructor?.name === "ClaudeRefusalError"; }
 check("claude: refusal を ClaudeRefusalError にする", refused);
 
+
+// ── 構造化出力(jsonSchema) ──
+const SCHEMA = { type: "object", additionalProperties: false, required: ["a"], properties: { a: { type: "string" } } };
+nextReply = OPENAI_LIKE;
+await createAIProvider("openrouter").complete([{ role: "user", content: "x" }], { jsonSchema: { name: "t", schema: SCHEMA } });
+check("openrouter: jsonSchema → response_format json_schema(strict)",
+  captured.body.response_format?.type === "json_schema" && captured.body.response_format.json_schema.strict === true &&
+  captured.body.response_format.json_schema.name === "t" && JSON.stringify(captured.body.response_format.json_schema.schema) === JSON.stringify(SCHEMA));
+await createAIProvider("openrouter").complete([{ role: "user", content: "x" }], { jsonMode: true });
+check("openrouter: jsonMode のみなら json_object のまま", captured.body.response_format?.type === "json_object");
+nextReply = CLAUDE_OK;
+await createAIProvider("claude").complete([{ role: "user", content: "x" }], { jsonSchema: { name: "t", schema: SCHEMA } });
+check("claude: jsonSchema → output_config.format",
+  captured.body.output_config?.format?.type === "json_schema" && JSON.stringify(captured.body.output_config.format.schema) === JSON.stringify(SCHEMA));
+nextReply = GEMINI_OK;
+await createAIProvider("gemini").complete([{ role: "user", content: "x" }], { jsonSchema: { name: "t", schema: SCHEMA } });
+check("gemini: jsonSchema 時は JSON 出力を指定", captured.body.generationConfig.responseMimeType === "application/json");
+
 // ── 誤用の検出: system に画像 ──
 let rejected = false;
 try { await createAIProvider("openrouter").complete([{ role: "system", content: [{ type: "image", mediaType: "image/png", data: PNG }] }]); } catch { rejected = true; }

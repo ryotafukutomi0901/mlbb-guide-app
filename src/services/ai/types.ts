@@ -23,12 +23,25 @@ export interface AIMessage {
   content: string | AIContentPart[];
 }
 
+/**
+ * 構造化出力のスキーマ。プロバイダ間で通る共通部分だけで書くこと:
+ * すべての object に `additionalProperties: false` と全プロパティの `required`、
+ * nullable は `anyOf: [{...}, { type: "null" }]`。`minimum` / `maxLength` 等の制約は
+ * Anthropic が受け付けないため使わず、範囲の検証は受け取った側(zod)で行う。
+ */
+export interface AIJsonSchema {
+  name: string;
+  schema: Record<string, unknown>;
+}
+
 export interface AICompletionOptions {
   model?: string;
   /** 指定したときだけ送る。現行のClaudeモデルなどは送ると400になるため既定値は持たない */
   temperature?: number;
   maxTokens?: number;
   jsonMode?: boolean;
+  /** 指定すると出力をこのスキーマに拘束する(jsonMode より優先) */
+  jsonSchema?: AIJsonSchema;
 }
 
 export interface AICompletionResult {

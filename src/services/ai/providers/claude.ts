@@ -52,7 +52,7 @@ export class ClaudeProvider extends BaseAIProvider {
     const model = options?.model ?? this.defaultModel;
     const systemMessage = messages.find((m) => m.role === "system");
 
-    // jsonMode はスキーマを伴わないため、Claudeでは出力形式をプロンプト側で指示する
+    // jsonSchema は構造化出力で拘束する。スキーマのない jsonMode はプロンプト側で指示する
     const params: BetaParams = {
       model,
       max_tokens: options?.maxTokens ?? 16000,
@@ -60,6 +60,9 @@ export class ClaudeProvider extends BaseAIProvider {
       ...(systemMessage ? { system: textOnly(systemMessage) } : {}),
       ...(options?.temperature !== undefined && SAMPLING_MODELS.has(model)
         ? { temperature: options.temperature }
+        : {}),
+      ...(options?.jsonSchema
+        ? { output_config: { format: { type: "json_schema", schema: options.jsonSchema.schema } } }
         : {}),
       ...(FALLBACK_MODELS.has(model)
         ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }

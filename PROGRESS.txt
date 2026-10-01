@@ -1,7 +1,8 @@
 MLBB Companion Platform (MLBB LAB) 進捗まとめ
-更新日: 2026-09-25
-状態: Phase 1〜3(課金除く)・Phase 4 Part A(画像アセット)・B1(AI層のVision対応)が完了。
-      次は Phase 4 B2(スクショ→試合データ変換)から再開。
+更新日: 2026-09-26
+状態: Phase 1〜3(課金除く)・Phase 4 Part A・B1・B2 と、障害時の fail closed 修正が完了。次は B3(アップロードUI)。
+      GitHub: PR #1(再設計, base main)・PR #2(B2, base PR #1 のブランチ)を作成済み。
+      障害時の修正はブランチ fix/saas-dept-supabase-resilience 上で未コミット(CEO確認待ち)。
       再設計仕様は docs/redesign/ に全文書化(モデル非依存のハンドオフ文書)。
 
 ────────────────────────────────────
@@ -190,19 +191,53 @@ MLBB Companion Platform (MLBB LAB) 進捗まとめ
   tsc 0 / lint 0 / build 成功(静的226維持)/ SDKとキー名はクライアント非混入 /
   既存コーチAPI: 正常系=sample, 不正入力=400
 
-【次回ここから: Part B — 残り B2 → B4 → B3】
-計画は /Users/ryouta/.claude/plans/mlbb-jiggly-wand.md の Part B。実装順は B1→B2→B4→B3。
- B2. src/lib/coach/vision.ts + src/app/api/coach/parse-screenshot/route.ts
-     画像 → 既存 coachInputSchema に適合するJSONをstructured outputで抽出。
-     ヒーロー名は heroes-canonical.json の ja/en/aliases で正準slugへ解決。
-     読めなかった項目は null。推測で埋めない。画像は保存しない。
-     画像は B1 の中立型 { type:"image", mediaType, data } で provider.complete に渡す。
-     OpenRouter の sonnet-5 は structured outputs 対応(公開APIで確認済み)。
- B4. models.ts に screenshot_parse ルート追加 + quota.ts に上限追加
-     ★DBマイグレーションが必要: usage_events.kind の check制約が
-       ('match_review','followup') 固定。'screenshot_parse' を追加する
-       (Supabase MCP の apply_migration。project_id = sxfdxnyfftrfvirbzbkz)
- B3. MatchAnalyzerForm.tsx に画像アップロード欄 → 解析 → フォーム自動入力(確認・修正可)
+【完了: B2 — スクショ→試合データ変換(2026-09-26、B4の必須部分を含む)】
+・src/lib/coach/vision.ts(新規): スクショから分析フォームの値を読み取る
+  画面の文字を書き写すだけ(推測・計算・補完なし)。読めない値は null のまま返す
+  範囲外の値は分析APIと同じ zod の範囲で捨てる。試合時間の分換算はサーバー側で行う
+  ヒーロー名は heroRepository.findHeroByName(正規化後の完全一致のみ)で正準slugへ
+・POST /api/coach/parse-screenshot(新規): 登録ユーザーのみ(未登録401)・5MBまで・
+  中身で形式判定(偽MIMEは415)・利用上限(402)・キー未設定は503(偽装しない)・画像は保存しない
+・AI層に構造化出力(AICompletionOptions.jsonSchema)を追加(OpenRouter/OpenAI=json_schema、
+  Claude=output_config.format、Gemini=JSON出力指定のみ)
+・利用上限をプラン×用途の表(QUOTA[plan][task])に整理。screenshot_parse を追加
+  (未登録=不可 / Free=月3回 / Pro=日5・月100)。identifyCaller() で本人特定を共通化
+・DB: usage_events.kind に screenshot_parse を追加(0003、適用済み)。
+  以前MCPで直接適用したセキュリティ修正を 0002 としてリポジトリに記録
+・Supabaseプロジェクトが無料プランの自動停止で止まっていたため再開した
+
+【検証(B2)】
+・node scripts/qa/vision-parse.mjs → 43/43(実装を意図的に壊すと検出されることも確認)
+・node scripts/qa/ai-wire.mjs → 24/24(構造化出力の4項目を追加)
+・tsc 0 / lint 0 / build 成功(静的227ページ)
+・HTTP: 未ログインのアップロード=401、6MB=413(本文を読む前)、GET=405、既存の分析API=正常
+・DB: 制約の置き換えを実DBで確認 / security advisor 0件
+・未確認: ログイン状態での読み取り本体と利用上限(テスト用アカウントを作れないため単体テストで代替)、
+  実際の画像での読み取り精度(OPENROUTER_API_KEY 設定後)
+
+【完了: 障害時にAIコーチが「断る」修正(B3の前に実施)】
+ ・利用量を数えられない(DB障害・service role 未設定)ときは 503 で断り、AIを呼ばない
+   → 本番公開には SUPABASE_SERVICE_ROLE_KEY が必須(未設定だとAI分析は常に503。サンプル表示は影響なし)
+ ・認証基盤の障害を未ログイン扱いにしない(API 503・ダッシュボード「一時的に表示できません」)
+ ・Supabase への問い合わせに時間の上限(proxy 1.5秒 / サーバー 3秒 / ブラウザ 5秒)
+ ・分析の再試行分・失敗分の原価も記録する
+ ・検証: node scripts/qa/coach-resilience.mjs(33項目)。詳細は 07_DECISION_LOG.md
+ ・CEO判断: 失敗した回も利用上限に数える(現状維持。実キー運用で失敗頻度を見て再判断)
+
+【次回ここから: B3 — フォームに画像アップロード欄を付ける(UI)】
+計画は /Users/ryouta/.claude/plans/mlbb-jiggly-wand.md の Part B。B1・B2(B4の必須部分含む)は完了。
+ B3. src/components/coach/MatchAnalyzerForm.tsx に画像アップロード欄を付ける
+     ・送信先: POST /api/coach/parse-screenshot(multipart、フィールド名 "image"、5MBまで)
+     ・応答 { fields, unreadable, unresolvedHeroNames, remaining } の fields でフォームを自動入力
+       (heroSlug / result / kills / deaths / assists / durationMinutes / gold / allyHeroes / enemyHeroes)
+     ・null の項目は空欄のまま残し、「読み取れなかった項目」として示す。値は本人が確認・修正してから送信
+     ・「AIが読み取った値」であることを明示する
+     ・エラー: 401=ログイン導線 / 402=上限(quota_exceeded) / 413・415・400=画像の選び直し /
+       422=結果画面ではない / 502・500=失敗 / 503=現在利用不可。いずれも手入力で続行できること
+     ・未ログインでは欄を出さずに「ログインするとスクショから自動入力できます」と案内する
+     ・スマホ(375px)で操作しやすいこと。アップロード前に端末側で縮小すると通信量を抑えられる
+     ・料金ページの比較表に「スクショ読み取り」の行を足す(数値は QUOTA から引く)
+ B4(残り). コスト調整のみ。実キーでの原価を usage_events で確認してから判断する
 
 【調査で確定済み(再調査不要)】
 ・MLBB公式APIは存在しない。個人戦績はスクショOCRでしか取れない

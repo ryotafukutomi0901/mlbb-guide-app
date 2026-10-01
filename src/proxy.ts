@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { SUPABASE_TIMEOUT_MS, fetchWithTimeout } from "@/lib/supabase/fetch";
 
 /**
  * Supabaseセッションの更新(Next.js 16ではmiddlewareがproxyに改称)。
@@ -14,6 +15,8 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(url, key, {
+    // 全ページのリクエストで走るため短く打ち切る(Supabase停止中にサイト全体が固まらないように)
+    global: { fetch: fetchWithTimeout(SUPABASE_TIMEOUT_MS.proxy) },
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (list) => {
@@ -24,8 +27,13 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  // getUser() を呼ぶことでセッションが更新される
-  await supabase.auth.getUser();
+  // getUser() を呼ぶことでセッションが更新される。
+  // 認証基盤に届かなくてもページ表示は止めない(認証が要る処理は各ルートで判定する)
+  try {
+    await supabase.auth.getUser();
+  } catch {
+    // 時間切れ等。セッション更新だけを諦めて先へ進む
+  }
 
   return response;
 }
