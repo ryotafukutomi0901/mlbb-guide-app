@@ -1,8 +1,8 @@
 MLBB Companion Platform (MLBB LAB) 進捗まとめ
-更新日: 2026-09-26
-状態: Phase 1〜3(課金除く)・Phase 4 Part A・B1・B2 と、障害時の fail closed 修正が完了。次は B3(アップロードUI)。
-      GitHub: PR #1(再設計, base main)・PR #2(B2, base PR #1 のブランチ)を作成済み。
-      障害時の修正はブランチ fix/saas-dept-supabase-resilience 上で未コミット(CEO確認待ち)。
+更新日: 2026-10-01
+状態: Phase 1〜3(課金除く)・Phase 4 Part A・B1・B2・B3 と、障害時の fail closed 修正が完了。
+      GitHub: PR #1(再設計, base main)・PR #2(B2)・PR #3(障害時の修正)を作成済み(PR #1←#2←#3 の順に積んである)。
+      B3 はブランチ feature/saas-dept-screenshot-upload-ui 上で未コミット(CEO確認待ち)。
       再設計仕様は docs/redesign/ に全文書化(モデル非依存のハンドオフ文書)。
 
 ────────────────────────────────────
@@ -224,20 +224,19 @@ MLBB Companion Platform (MLBB LAB) 進捗まとめ
  ・検証: node scripts/qa/coach-resilience.mjs(33項目)。詳細は 07_DECISION_LOG.md
  ・CEO判断: 失敗した回も利用上限に数える(現状維持。実キー運用で失敗頻度を見て再判断)
 
-【次回ここから: B3 — フォームに画像アップロード欄を付ける(UI)】
-計画は /Users/ryouta/.claude/plans/mlbb-jiggly-wand.md の Part B。B1・B2(B4の必須部分含む)は完了。
- B3. src/components/coach/MatchAnalyzerForm.tsx に画像アップロード欄を付ける
-     ・送信先: POST /api/coach/parse-screenshot(multipart、フィールド名 "image"、5MBまで)
-     ・応答 { fields, unreadable, unresolvedHeroNames, remaining } の fields でフォームを自動入力
-       (heroSlug / result / kills / deaths / assists / durationMinutes / gold / allyHeroes / enemyHeroes)
-     ・null の項目は空欄のまま残し、「読み取れなかった項目」として示す。値は本人が確認・修正してから送信
-     ・「AIが読み取った値」であることを明示する
-     ・エラー: 401=ログイン導線 / 402=上限(quota_exceeded) / 413・415・400=画像の選び直し /
-       422=結果画面ではない / 502・500=失敗 / 503=現在利用不可。いずれも手入力で続行できること
-     ・未ログインでは欄を出さずに「ログインするとスクショから自動入力できます」と案内する
-     ・スマホ(375px)で操作しやすいこと。アップロード前に端末側で縮小すると通信量を抑えられる
-     ・料金ページの比較表に「スクショ読み取り」の行を足す(数値は QUOTA から引く)
- B4(残り). コスト調整のみ。実キーでの原価を usage_events で確認してから判断する
+【完了: B3 — フォームにスクショ取り込み欄】
+ ・ログイン済みの人だけに欄を出す。端末で縮小(長辺1600px)して送り、読めた値を自動入力して「AI」の目印を付ける
+ ・読めなかった値は空欄のまま(黄色の枠)で送信前に止める。直した項目は目印が外れる
+ ・フォームに獲得ゴールドと味方・敵の構成の入力を追加
+ ・失敗ごとの案内(401/402/415/422/503/通信失敗)。どれも手入力で続けられる
+ ・料金表に「試合結果のスクショから自動入力」の行
+ ・途中で直したもの: 上限画面がプランに関係なく「登録すると使える」と出していた / サンプルの帯が「開発中」のままだった
+ ・検証: scripts/qa/coach-upload-ui.mjs(59項目。手順は 06_VERIFICATION.md 6-3b)
+
+【次回ここから】
+ ・本番キーの設定(CEO作業): OPENROUTER_API_KEY と SUPABASE_SERVICE_ROLE_KEY を Vercel と .env.local に設定
+   → 実際の試合結果スクショで読み取り精度を確認する(未検証)
+ ・B4(残り): コスト調整のみ。実キーでの原価を usage_events で確認してから判断する
 
 【調査で確定済み(再調査不要)】
 ・MLBB公式APIは存在しない。個人戦績はスクショOCRでしか取れない

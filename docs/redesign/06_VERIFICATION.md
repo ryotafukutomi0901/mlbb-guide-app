@@ -72,6 +72,23 @@ node scripts/qa/audit.mjs shots-$(date +%Y%m%d)
 - フルページスクリーンショットを出力。
 - **合格条件: issues = 0。**
 
+## 6-3b. スクショ取り込みUIの検証(Phase 4 B3で導入)
+
+```bash
+# Supabase の向き先を「使われていないローカルの番地」にしたビルドで起動する(本番Supabaseに触れない)
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321 NEXT_PUBLIC_SUPABASE_ANON_KEY=qa npm run build
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321 NEXT_PUBLIC_SUPABASE_ANON_KEY=qa npm run start -- -p 3002
+node scripts/qa/coach-upload-ui.mjs shots-upload   # 59項目。playwright を入れた場所で実行(audit.mjs と同じ)
+# 終わったら通常の環境変数でビルドし直してから 6-3 を実行する
+```
+
+ブラウザ側の認証(`/auth/v1/user`)とスクショ読み取りAPIは Playwright の差し替えで模擬する。実アカウント・APIキー不要。
+確かめること: 未ログインは案内だけ出す / 認証障害時はログインを促さない / 大きい画像は端末で縮小してJPEGで送る /
+読めた値の自動入力とAIの目印・直したら目印が外れる / 読めなかった必須項目は空欄のまま送信を止める /
+失敗(401・402・415・422・503・通信失敗)ごとの案内と手入力での続行 / 上限の案内がプランに合っている /
+料金表の行 / 320・375・1440px で横はみ出しなし。
+**合格条件: `N/N passed` で exit 0。** `src/components/coach/` `src/hooks/useAuthUser.ts` を触ったら必ず実行する。
+
 ### 目視確認項目(スクリーンショットで確認)
 ヘッダー / ナビ切替 / カード / テーブル / モーダル / AIコーチ / Dashboard / pricing / フッター /
 テキスト切れ / ボタン重なり。
