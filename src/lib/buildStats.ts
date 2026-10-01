@@ -114,6 +114,7 @@ function applyBonus(stats: ComputedStats, bonus: ItemBonus, moveSpeedPctAcc: { v
   stats.lifestealPct += bonus.lifestealPct ?? 0;
   stats.spellVampPct += bonus.spellVampPct ?? 0;
   stats.hpRegen += bonus.hpRegen ?? 0;
+  stats.manaRegen += bonus.manaRegen ?? 0;
   moveSpeedPctAcc.value += bonus.moveSpeedPct ?? 0;
 }
 

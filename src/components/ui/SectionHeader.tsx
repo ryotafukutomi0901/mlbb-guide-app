@@ -7,12 +7,15 @@ export function SectionHeader({
   icon,
   href,
   hrefLabel = "すべて見る",
+  badge,
   className,
 }: {
   title: string;
   icon?: React.ReactNode;
   href?: string;
   hrefLabel?: string;
+  /** サンプルデータであること等の注記 */
+  badge?: string;
   className?: string;
 }) {
   return (
@@ -21,6 +24,11 @@ export function SectionHeader({
         <span className="h-4 w-1 rounded-full gradient-primary shadow-[0_0_8px_rgba(139,92,246,0.6)]" />
         {icon}
         {title}
+        {badge && (
+          <span className="rounded-md border border-border bg-surface-2 px-1.5 py-0.5 text-[10px] font-medium text-text-faint">
+            {badge}
+          </span>
+        )}
       </h2>
       {href && (
         <Link

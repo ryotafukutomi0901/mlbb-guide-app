@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# 環境変数の一覧(値は空)は共有する
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code のローカル設定(個人の権限設定。公開リポジトリに載せない)
+.claude/settings.local.json

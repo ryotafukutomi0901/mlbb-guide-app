@@ -4,7 +4,13 @@ import { BookOpen, Shield, Timer, Zap } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "図鑑" };
+export const metadata: Metadata = {
+  title: "図鑑",
+  description:
+    "MLBB(モバイルレジェンド)の図鑑ハブ。装備・エンブレム・バトルスペル・ジャングルの情報をまとめています。",
+  alternates: { canonical: "/compendium" },
+  openGraph: { title: "図鑑 | MLBB LAB", description: "MLBB(モバイルレジェンド)の図鑑ハブ。装備・エンブレム・バトルスペル・ジャングルの情報をまとめています。", url: "/compendium" },
+};
 
 const SECTIONS = [
   {

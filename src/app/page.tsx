@@ -63,7 +63,7 @@ export default function Home() {
             {topMeta.map((hero, i) => {
               const image = heroImage(hero.slug);
               return (
-                <Link key={hero.slug} href={`/characters/${hero.slug}`} className="group text-center">
+                <Link key={hero.slug} href={`/heroes/${hero.slug}`} className="group text-center">
                   <div className="relative mx-auto aspect-[4/5] w-full max-w-24 overflow-hidden rounded-xl border border-border transition-all duration-300 group-hover:border-gold/60 group-hover:shadow-[0_0_20px_rgba(240,180,41,0.3)]">
                     {image ? (
                       <Image
@@ -105,7 +105,7 @@ export default function Home() {
             {rising.map(({ meta, ...hero }) => (
               <li key={hero.slug}>
                 <Link
-                  href={`/characters/${hero.slug}`}
+                  href={`/heroes/${hero.slug}`}
                   className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-hover/60"
                 >
                   <HeroAvatar name={hero.name} role={hero.roles[0]} slug={hero.slug} size="sm" />
@@ -197,7 +197,12 @@ export default function Home() {
         </Card>
 
         <Card accent>
-          <SectionHeader title="AIコーチレポート" icon={<Bot size={15} className="text-neon" />} href="/coach" />
+          <SectionHeader
+            title="AIコーチレポート"
+            icon={<Bot size={15} className="text-neon" />}
+            href="/coach"
+            badge="サンプル"
+          />
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl border border-gold/40 bg-gold/10 shadow-[0_0_20px_rgba(240,180,41,0.2)]">
               <span className="font-display text-2xl font-black text-gradient-gold">{report.grade}</span>

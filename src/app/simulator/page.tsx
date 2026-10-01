@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import { BuildSimulator } from "@/components/simulator/BuildSimulator";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "ビルドシミュレーター" };
+export const metadata: Metadata = {
+  title: "ビルドシミュレーター",
+  description:
+    "MLBB(モバイルレジェンド)のビルドシミュレーター。装備・エンブレム・レベルを組み合わせて最終ステータスをリアルタイムに計算します。",
+  alternates: { canonical: "/simulator" },
+  openGraph: { title: "ビルドシミュレーター | MLBB LAB", description: "MLBB(モバイルレジェンド)のビルドシミュレーター。装備・エンブレム・レベルを組み合わせて最終ステータスをリアルタイムに計算します。", url: "/simulator" },
+};
 
 export default async function SimulatorPage(props: PageProps<"/simulator">) {
   const { hero } = await props.searchParams;

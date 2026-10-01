@@ -3,7 +3,13 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { NewsExplorer } from "@/components/news/NewsExplorer";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "ニュース" };
+export const metadata: Metadata = {
+  title: "ニュース",
+  description:
+    "MLBB(モバイルレジェンド)の最新ニュース。コラボ・新スキン・イベント・パッチ情報を日本語でお届けします。",
+  alternates: { canonical: "/news" },
+  openGraph: { title: "ニュース | MLBB LAB", description: "MLBB(モバイルレジェンド)の最新ニュース。コラボ・新スキン・イベント・パッチ情報を日本語でお届けします。", url: "/news" },
+};
 
 export default function NewsPage() {
   return (

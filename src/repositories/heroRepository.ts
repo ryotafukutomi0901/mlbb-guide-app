@@ -1,18 +1,14 @@
 import { HERO_ROSTER, HERO_DETAILS } from "@/data/heroes";
 import { HERO_EXTRAS } from "@/data/hero-extras";
 import { CURATED_META } from "@/data/meta";
-import type { HeroDetail, HeroMeta, HeroSummary, Role, Tier } from "@/data/types";
-import { seededFloat, seededPick } from "@/lib/seed";
-import { tierRank } from "@/lib/tier";
-
-const ROSTER_SLUGS = HERO_ROSTER.map((h) => h.slug);
+import type { CounterEdge, HeroDetail, HeroMeta, HeroSummary, Lane, Role, Tier } from "@/data/types";
 
 export function getAllHeroes(): HeroSummary[] {
   return HERO_ROSTER;
 }
 
 export function getHeroBySlug(slug: string): HeroSummary | undefined {
-  return HERO_ROSTER.find((h) => h.slug === slug) ?? HERO_DETAILS[slug];
+  return HERO_ROSTER.find((h) => h.slug === slug);
 }
 
 export function getHeroDetail(slug: string): HeroDetail | undefined {
@@ -29,89 +25,105 @@ export function hasDetail(slug: string): boolean {
   return slug in HERO_DETAILS;
 }
 
-const TIER_WIN_BASE: Record<Tier, number> = {
-  "S+": 54.5,
-  S: 52.8,
-  "A+": 51.4,
-  A: 50.4,
-  "B+": 49.4,
-  B: 48.2,
-};
-
-export function getHeroMeta(slug: string): HeroMeta {
-  const curated = CURATED_META[slug];
-  if (curated) return { slug, ...curated };
-  const hero = getHeroBySlug(slug);
-  const base = hero ? TIER_WIN_BASE[hero.tier] : 50;
-  return {
-    slug,
-    winRate: seededFloat(`${slug}:wr`, base - 1.2, base + 1.2),
-    pickRate: seededFloat(`${slug}:pr`, 0.4, 6.5),
-    banRate: seededFloat(`${slug}:br`, 0.2, hero && tierRank(hero.tier) <= 1 ? 45 : 12),
-    trend: seededFloat(`${slug}:tr`, -2.5, 2.5),
-  };
+/**
+ * 編集部がキュレーションしたメタ数値のみを返す。
+ * 未整備のヒーローは undefined。推測値・生成値は返さない。
+ */
+export function getHeroMeta(slug: string): HeroMeta | undefined {
+  return CURATED_META[slug];
 }
 
+/** メタ数値が存在するヒーローだけを返す */
 export function getAllHeroMeta(): HeroMeta[] {
-  return ROSTER_SLUGS.map(getHeroMeta);
+  return HERO_ROSTER.map((h) => CURATED_META[h.slug]).filter((m): m is HeroMeta => Boolean(m));
 }
 
-export function getTierList(): { tier: Tier; heroes: HeroSummary[] }[] {
-  const tiers: Tier[] = ["S+", "S", "A+", "A", "B+", "B"];
-  return tiers.map((tier) => ({
+export type HeroWithMeta = HeroSummary & { meta: HeroMeta };
+
+/** メタ数値を持つヒーローのみ(ランキング表示用) */
+export function getHeroesWithMeta(): HeroWithMeta[] {
+  return HERO_ROSTER.flatMap((h) => {
+    const meta = CURATED_META[h.slug];
+    return meta ? [{ ...h, meta }] : [];
+  });
+}
+
+const TIER_ORDER: Tier[] = ["S+", "S", "A+", "A", "B+", "B"];
+
+/** レーンを指定するとそのレーンで使われるヒーローに絞る */
+export function getTierList(lane?: Lane): { tier: Tier; heroes: HeroSummary[] }[] {
+  const pool = lane
+    ? HERO_ROSTER.filter((h) => h.lane === lane || h.altLanes?.includes(lane))
+    : HERO_ROSTER;
+  return TIER_ORDER.map((tier) => ({
     tier,
-    heroes: HERO_ROSTER.filter((h) => h.tier === tier),
+    heroes: pool.filter((h) => h.tier === tier),
   }));
 }
 
-export function getTopMeta(count: number): (HeroSummary & { meta: HeroMeta })[] {
-  return [...HERO_ROSTER]
-    .map((h) => ({ ...h, meta: getHeroMeta(h.slug) }))
+export function getHeroesByLane(lane: Lane): HeroSummary[] {
+  return HERO_ROSTER.filter((h) => h.lane === lane || h.altLanes?.includes(lane));
+}
+
+export function getTopMeta(count: number): HeroWithMeta[] {
+  return getHeroesWithMeta()
     .sort((a, b) => b.meta.winRate - a.meta.winRate)
     .slice(0, count);
 }
 
-export function getRisingHeroes(count: number): (HeroSummary & { meta: HeroMeta })[] {
-  return [...HERO_ROSTER]
-    .map((h) => ({ ...h, meta: getHeroMeta(h.slug) }))
+export function getRisingHeroes(count: number): HeroWithMeta[] {
+  return getHeroesWithMeta()
     .sort((a, b) => b.meta.trend - a.meta.trend)
     .slice(0, count);
 }
 
+/** 相性データ1辺に相手ヒーローの情報を添えたもの */
+export interface ResolvedCounterEdge extends CounterEdge {
+  hero: HeroSummary;
+}
+
 export interface HeroMatchups {
-  counters: HeroSummary[];
-  counteredBy: HeroSummary[];
-  synergies: HeroSummary[];
+  counters: ResolvedCounterEdge[];
+  counteredBy: ResolvedCounterEdge[];
+  synergies: ResolvedCounterEdge[];
 }
 
-function resolveHeroes(slugs: string[]): HeroSummary[] {
-  return slugs
-    .map((s) => getHeroBySlug(s))
-    .filter((h): h is HeroSummary => Boolean(h));
+function resolveEdges(edges: CounterEdge[] | undefined): ResolvedCounterEdge[] {
+  return (edges ?? []).flatMap((e) => {
+    const hero = getHeroBySlug(e.slug);
+    return hero ? [{ ...e, hero }] : [];
+  });
 }
 
-export function getMatchups(slug: string): HeroMatchups {
+/**
+ * 理由付きでキュレーションされた相性のみを返す。
+ * データが無いヒーローは undefined(UIは「準備中」を表示する)。
+ */
+export function getMatchups(slug: string): HeroMatchups | undefined {
   const extras = HERO_EXTRAS[slug];
-  if (extras?.counters && extras.counteredBy) {
-    return {
-      counters: resolveHeroes(extras.counters),
-      counteredBy: resolveHeroes(extras.counteredBy),
-      synergies: resolveHeroes(extras.synergies ?? []),
-    };
-  }
+  if (!extras?.counters?.length && !extras?.counteredBy?.length) return undefined;
   return {
-    counters: resolveHeroes(seededPick(`${slug}:counters`, ROSTER_SLUGS, 3, slug)),
-    counteredBy: resolveHeroes(seededPick(`${slug}:countered`, ROSTER_SLUGS, 3, slug)),
-    synergies: resolveHeroes(seededPick(`${slug}:synergy`, ROSTER_SLUGS, 3, slug)),
+    counters: resolveEdges(extras.counters),
+    counteredBy: resolveEdges(extras.counteredBy),
+    synergies: resolveEdges(extras.synergies),
   };
 }
 
-export function searchHeroes(query: string, role?: Role): HeroSummary[] {
+/** 相性データがキュレーション済みのヒーロー */
+export function getHeroesWithMatchups(): HeroSummary[] {
+  return HERO_ROSTER.filter((h) => Boolean(HERO_EXTRAS[h.slug]?.counters?.length));
+}
+
+export function searchHeroes(query: string, role?: Role, lane?: Lane): HeroSummary[] {
   const q = query.trim().toLowerCase();
   return HERO_ROSTER.filter((hero) => {
     const matchesRole = !role || hero.roles.includes(role);
+    const matchesLane = !lane || hero.lane === lane || hero.altLanes?.includes(lane);
     const matchesQuery =
-      !q || hero.name.toLowerCase().includes(q) || hero.nameEn.toLowerCase().includes(q);
-    return matchesRole && matchesQuery;
+      !q ||
+      hero.name.toLowerCase().includes(q) ||
+      hero.nameEn.toLowerCase().includes(q) ||
+      hero.aliases?.some((a) => a.toLowerCase().includes(q)) === true;
+    return matchesRole && matchesLane && matchesQuery;
   });
 }

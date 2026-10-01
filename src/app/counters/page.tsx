@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import { CounterExplorer } from "@/components/meta/CounterExplorer";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "カウンター一覧" };
+export const metadata: Metadata = {
+  title: "カウンター一覧",
+  description:
+    "MLBB(モバイルレジェンド)のカウンター相性。誰が誰に強いかだけでなく、なぜ強いのかを理由付きで解説します。",
+  alternates: { canonical: "/counters" },
+  openGraph: { title: "カウンター一覧 | MLBB LAB", description: "MLBB(モバイルレジェンド)のカウンター相性。誰が誰に強いかだけでなく、なぜ強いのかを理由付きで解説します。", url: "/counters" },
+};
 
 export default function CountersPage() {
   return (

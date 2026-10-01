@@ -1,4 +1,5 @@
 import { BaseAIProvider } from "../baseProvider";
+import { errorDetail, toOpenAIMessages } from "../content";
 import type { AICompletionOptions, AICompletionResult, AIMessage } from "../types";
 
 export class OpenAIProvider extends BaseAIProvider {
@@ -23,17 +24,17 @@ export class OpenAIProvider extends BaseAIProvider {
       },
       body: JSON.stringify({
         model,
-        messages,
-        temperature: options?.temperature ?? 0.3,
+        messages: toOpenAIMessages(messages),
         max_tokens: options?.maxTokens ?? 4096,
+        ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
         ...(options?.jsonMode ? { response_format: { type: "json_object" } } : {}),
       }),
     });
-    if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`);
+    if (!res.ok) throw new Error(`OpenAI API error: ${res.status} ${await errorDetail(res)}`);
     const data = await res.json();
     return {
-      content: data.choices[0].message.content,
-      model,
+      content: data.choices[0].message.content ?? "",
+      model: data.model ?? model,
       usage: data.usage
         ? { inputTokens: data.usage.prompt_tokens, outputTokens: data.usage.completion_tokens }
         : undefined,

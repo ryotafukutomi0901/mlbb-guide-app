@@ -90,7 +90,7 @@ export function GlobalSearch() {
                 {results.heroes.map((hero) => (
                   <motion.div key={hero.slug} variants={fadeUp}>
                     <Link
-                      href={`/characters/${hero.slug}`}
+                      href={`/heroes/${hero.slug}`}
                       className="glass flex items-center gap-3 rounded-xl p-3 transition-colors hover:border-primary/50"
                     >
                       <HeroAvatar name={hero.name} role={hero.roles[0]} slug={hero.slug} size="sm" />

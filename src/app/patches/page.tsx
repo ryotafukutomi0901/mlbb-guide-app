@@ -8,7 +8,13 @@ import { PATCH_CHANGE_LABEL, type PatchChange } from "@/data/types";
 import { getPatchNotes } from "@/repositories/contentRepository";
 import { getHeroBySlug } from "@/repositories/heroRepository";
 
-export const metadata: Metadata = { title: "パッチノート" };
+export const metadata: Metadata = {
+  title: "パッチノート",
+  description:
+    "MLBB(モバイルレジェンド)のパッチノート。ヒーロー・装備の調整内容とメタへの影響を日本語で解説します。",
+  alternates: { canonical: "/patches" },
+  openGraph: { title: "パッチノート | MLBB LAB", description: "MLBB(モバイルレジェンド)のパッチノート。ヒーロー・装備の調整内容とメタへの影響を日本語で解説します。", url: "/patches" },
+};
 
 const CHANGE_BADGE: Record<PatchChange["type"], "success" | "danger" | "warning" | "neon" | "primary"> = {
   buff: "success",
@@ -65,7 +71,7 @@ export default function PatchesPage() {
                     >
                       <div className="flex items-center gap-2.5">
                         {hero && (
-                          <Link href={`/characters/${hero.slug}`}>
+                          <Link href={`/heroes/${hero.slug}`}>
                             <HeroAvatar name={hero.name} role={hero.roles[0]} slug={hero.slug} size="sm" />
                           </Link>
                         )}

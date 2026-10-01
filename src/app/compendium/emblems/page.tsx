@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { EmblemIcon } from "@/components/ui/EmblemIcon";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ROLE_LABEL } from "@/data/types";
 import { getEmblems } from "@/repositories/contentRepository";
@@ -21,17 +22,12 @@ export default function EmblemsPage() {
         {emblems.map((emblem) => (
           <Card key={emblem.slug} interactive className="p-5">
             <div className="flex items-center gap-3">
-              <span
-                className="flex h-11 w-11 items-center justify-center rounded-2xl border font-display text-sm font-black"
-                style={{
-                  color: emblem.color,
-                  borderColor: `${emblem.color}55`,
-                  backgroundColor: `${emblem.color}14`,
-                  boxShadow: `0 0 18px ${emblem.color}33`,
-                }}
-              >
-                {emblem.nameEn.slice(0, 1)}
-              </span>
+              <EmblemIcon
+                slug={emblem.slug}
+                name={emblem.name}
+                nameEn={emblem.nameEn}
+                color={emblem.color}
+              />
               <div>
                 <h2 className="font-bold">{emblem.name}</h2>
                 <div className="mt-1 flex gap-1.5">

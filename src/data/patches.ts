@@ -40,7 +40,7 @@ export const PATCH_NOTES: PatchNote[] = [
         notes: ["ワイヤーのエネルギー消費 25 → 23", "ブレイド七連の基礎ダメージを微減"],
       },
       {
-        target: "バーサーカーズ・フューリー",
+        target: "バーサーク",
         targetSlug: "berserkers-fury",
         kind: "item",
         type: "nerf",
@@ -60,7 +60,7 @@ export const PATCH_NOTES: PatchNote[] = [
     title: "新ヒーロー「ゼティアン」登場と魔法装備リワーク",
     highlights: [
       "新ヒーロー ゼティアン(ファイター/メイジ)実装",
-      "クロック・オブ・デスティニーのリワーク",
+      "デスティニーのリワーク",
       "タートルの出現時間を2:00に統一",
     ],
     changes: [
@@ -72,7 +72,7 @@ export const PATCH_NOTES: PatchNote[] = [
         notes: ["魔法剣士型の新ヒーロー。スキル連携でスタックを貯め、強化通常攻撃で爆発ダメージを与える。"],
       },
       {
-        target: "クロック・オブ・デスティニー",
+        target: "デスティニー",
         targetSlug: "clock-of-destiny",
         kind: "item",
         type: "rework",
@@ -86,7 +86,7 @@ export const PATCH_NOTES: PatchNote[] = [
         notes: ["ミンサースラストのダメージ係数 -8%"],
       },
       {
-        target: "エスタス",
+        target: "エステス",
         targetSlug: "estes",
         kind: "hero",
         type: "buff",
@@ -107,7 +107,7 @@ export const PATCH_NOTES: PatchNote[] = [
         notes: ["小型モンスターの経験値 +10%", "リトワンダーラーの移速バフ持続 +2秒"],
       },
       {
-        target: "ティグレル",
+        target: "ティグレアル",
         targetSlug: "tigreal",
         kind: "hero",
         type: "buff",
@@ -121,7 +121,7 @@ export const PATCH_NOTES: PatchNote[] = [
         notes: ["アイアンフックの判定幅を他フック系スキルと統一", "フックCD 9.5秒 → 10秒"],
       },
       {
-        target: "カリー",
+        target: "キャリー",
         targetSlug: "karrie",
         kind: "hero",
         type: "nerf",

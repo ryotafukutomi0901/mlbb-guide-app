@@ -1,7 +1,13 @@
 import type { HeroMeta } from "./types";
 
-// 主要ヒーローは手動キュレーション。それ以外はリポジトリ層でシード生成にフォールバックする。
-export const CURATED_META: Record<string, Omit<HeroMeta, "slug">> = {
+// 編集部がキュレーションしたメタ数値。ここに無いヒーローは数値を表示しない
+// (推測・乱数生成による「事実」の表示は禁止 — docs/redesign/02_DATA_SPEC.md 2-3)。
+const PATCH = "1.9.42";
+const UPDATED_AT = "2026-07-12";
+
+type CuratedMeta = Omit<HeroMeta, "slug" | "patch" | "updatedAt">;
+
+const CURATED: Record<string, CuratedMeta> = {
   marcel: { winRate: 55.8, pickRate: 3.1, banRate: 62.4, trend: 2.1 },
   masha: { winRate: 54.9, pickRate: 2.4, banRate: 48.2, trend: 1.4 },
   sora: { winRate: 54.2, pickRate: 1.9, banRate: 41.7, trend: 3.2 },
@@ -12,7 +18,7 @@ export const CURATED_META: Record<string, Omit<HeroMeta, "slug">> = {
   karrie: { winRate: 52.6, pickRate: 3.4, banRate: 18.9, trend: 1.1 },
   gord: { winRate: 52.5, pickRate: 2.1, banRate: 4.2, trend: 0.3 },
   diggie: { winRate: 52.3, pickRate: 1.4, banRate: 12.6, trend: 0.9 },
-  bennett: { winRate: 52.2, pickRate: 2.2, banRate: 15.3, trend: 0.5 },
+  floryn: { winRate: 52.2, pickRate: 2.2, banRate: 15.3, trend: 0.5 },
   kagura: { winRate: 51.8, pickRate: 4.6, banRate: 24.1, trend: 1.6 },
   claude: { winRate: 51.7, pickRate: 5.2, banRate: 28.7, trend: -0.8 },
   chou: { winRate: 51.5, pickRate: 8.9, banRate: 33.4, trend: 0.4 },
@@ -32,3 +38,13 @@ export const CURATED_META: Record<string, Omit<HeroMeta, "slug">> = {
   estes: { winRate: 51.9, pickRate: 2.9, banRate: 14.8, trend: -0.6 },
   miya: { winRate: 49.1, pickRate: 6.2, banRate: 0.9, trend: 1.7 },
 };
+
+export const CURATED_META: Record<string, HeroMeta> = Object.fromEntries(
+  Object.entries(CURATED).map(([slug, m]) => [
+    slug,
+    { slug, ...m, patch: PATCH, updatedAt: UPDATED_AT },
+  ])
+);
+
+export const META_PATCH = PATCH;
+export const META_UPDATED_AT = UPDATED_AT;

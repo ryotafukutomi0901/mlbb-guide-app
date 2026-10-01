@@ -22,7 +22,7 @@ function HeroChipRow({ slugs, emptyText }: { slugs: string[]; emptyText: string 
       {heroes.map((hero) => (
         <Link
           key={hero.slug}
-          href={`/characters/${hero.slug}`}
+          href={`/heroes/${hero.slug}`}
           title={hero.name}
           className="flex flex-col items-center gap-1 transition-transform hover:scale-105"
         >

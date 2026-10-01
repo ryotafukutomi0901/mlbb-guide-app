@@ -15,7 +15,7 @@ export function HeroCard({ hero, meta }: { hero: HeroSummary; meta?: HeroMeta })
   return (
     <motion.div variants={fadeUp} whileHover={{ y: -5 }} transition={{ duration: 0.25 }}>
       <Link
-        href={`/characters/${hero.slug}`}
+        href={`/heroes/${hero.slug}`}
         className="group relative block overflow-hidden rounded-2xl border border-border bg-surface transition-all duration-300 hover:border-primary/60 hover:shadow-[0_0_28px_rgba(139,92,246,0.25)]"
       >
         <div className="relative aspect-[4/5] overflow-hidden bg-surface-2">

@@ -12,7 +12,7 @@ export const RANKINGS: RankingPlayer[] = [
   { rank: 9, name: "Mirage", tag: "#JP15", tier: "mythic", points: 1198, winRate: 60.9, matches: 812, mainHeroes: ["esmeralda", "masha", "sora"], region: "JP" },
   { rank: 10, name: "Fubuki", tag: "#JP4", tier: "mythic", points: 1175, winRate: 61.2, matches: 689, mainHeroes: ["eudora", "gord", "xavier"], region: "JP" },
   { rank: 11, name: "Ronin", tag: "#JP33", tier: "mythic", points: 1149, winRate: 59.8, matches: 934, mainHeroes: ["alucard", "argus", "dyrroth"], region: "JP" },
-  { rank: 12, name: "Kagerou", tag: "#JP18", tier: "mythic", points: 1124, winRate: 60.4, matches: 758, mainHeroes: ["hylos2", "hanzo", "helcurt"], region: "JP" },
+  { rank: 12, name: "Kagerou", tag: "#JP18", tier: "mythic", points: 1124, winRate: 60.4, matches: 758, mainHeroes: ["hayabusa", "hanzo", "helcurt"], region: "JP" },
   { rank: 13, name: "Luna", tag: "#JP26", tier: "mythic", points: 1101, winRate: 58.7, matches: 823, mainHeroes: ["ixia", "melissa", "wanwan"], region: "JP" },
   { rank: 14, name: "Gekko", tag: "#JP41", tier: "mythic", points: 1076, winRate: 59.1, matches: 691, mainHeroes: ["marcel", "diggie", "mathilda"], region: "JP" },
   { rank: 15, name: "Susanoo", tag: "#JP8", tier: "mythic", points: 1058, winRate: 58.2, matches: 876, mainHeroes: ["thamuz", "terizla", "phoveus"], region: "JP" },

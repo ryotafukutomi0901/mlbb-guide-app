@@ -4,10 +4,12 @@ import {
   BookOpen,
   Bot,
   CalendarDays,
+  CreditCard,
   Crown,
   Dices,
   FileText,
   Home,
+  LayoutDashboard,
   ListOrdered,
   Newspaper,
   Search,
@@ -42,7 +44,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "HEROES",
     items: [
-      { href: "/characters", label: "ヒーロー一覧", icon: Users },
+      { href: "/heroes", label: "ヒーロー一覧", icon: Users },
       { href: "/tier-list", label: "Tierリスト", icon: Crown },
       { href: "/meta", label: "Metaランキング", icon: BarChart3 },
       { href: "/counters", label: "カウンター", icon: Target },
@@ -62,6 +64,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/compendium/jungle", label: "ジャングル / タイマー", icon: Timer },
       { href: "/coach", label: "AIコーチ", icon: Bot },
+      { href: "/dashboard", label: "ダッシュボード", icon: LayoutDashboard },
       { href: "/analysis", label: "試合分析", icon: ListOrdered },
       { href: "/ranking", label: "ランキング", icon: Trophy },
     ],
@@ -84,13 +87,14 @@ export const NAV_GROUPS: NavGroup[] = [
 ];
 
 export const FOOTER_NAV_ITEMS: NavItem[] = [
+  { href: "/pricing", label: "プラン", icon: CreditCard },
   { href: "/profile", label: "プロフィール", icon: User },
   { href: "/settings", label: "設定", icon: Settings },
 ];
 
 export const BOTTOM_NAV_ITEMS: NavItem[] = [
   { href: "/", label: "ホーム", icon: Home },
-  { href: "/characters", label: "ヒーロー", icon: Users },
+  { href: "/heroes", label: "ヒーロー", icon: Users },
   { href: "/simulator", label: "ビルド", icon: Swords },
   { href: "/coach", label: "コーチ", icon: Bot },
   { href: "/search", label: "メニュー", icon: Search },

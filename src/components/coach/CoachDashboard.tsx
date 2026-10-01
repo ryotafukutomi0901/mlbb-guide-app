@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, Upload } from "lucide-react";
+import { Bot } from "lucide-react";
 import { CoachReportView } from "@/components/coach/CoachReportView";
 import { HeroAvatar } from "@/components/hero/HeroAvatar";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { getHeroBySlug } from "@/repositories/heroRepository";
 import { getCoachReports, getMatchById } from "@/repositories/matchRepository";
 import { cn } from "@/lib/utils";
@@ -18,6 +17,16 @@ export function CoachDashboard() {
 
   return (
     <div>
+      <div className="mb-4 flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 p-3.5">
+        <Bot size={16} className="mt-0.5 shrink-0 text-primary" />
+        <div>
+          <p className="text-xs font-bold text-primary">サンプルレポート</p>
+          <p className="mt-1 text-xs leading-relaxed text-text-muted">
+            AIコーチの分析画面をサンプルデータで表示しています。あなたの試合データを分析する機能は現在開発中です。
+          </p>
+        </div>
+      </div>
+
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className="scrollbar-none flex flex-1 gap-2 overflow-x-auto">
           {reports.map((r) => {
@@ -47,14 +56,6 @@ export function CoachDashboard() {
             );
           })}
         </div>
-        <Button variant="secondary" size="sm" title="ダミー動作: 実際のアップロードはフェーズ2で対応">
-          <Upload size={14} />
-          動画をアップロード
-        </Button>
-        <Button size="sm" title="ダミー動作: 実際の解析はフェーズ2で対応">
-          <Bot size={14} />
-          新しい分析
-        </Button>
       </div>
 
       <CoachReportView report={report} match={match} />

@@ -3,7 +3,13 @@ import { MetaRankingTable } from "@/components/meta/MetaRankingTable";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getLatestPatch } from "@/repositories/contentRepository";
 
-export const metadata: Metadata = { title: "Metaランキング" };
+export const metadata: Metadata = {
+  title: "Metaランキング",
+  description:
+    "MLBB(モバイルレジェンド)のメタランキング。勝率・ピック率・バン率・上昇率で並べ替えて、今強いヒーローを把握できます。",
+  alternates: { canonical: "/meta" },
+  openGraph: { title: "Metaランキング | MLBB LAB", description: "MLBB(モバイルレジェンド)のメタランキング。勝率・ピック率・バン率・上昇率で並べ替えて、今強いヒーローを把握できます。", url: "/meta" },
+};
 
 export default function MetaPage() {
   const patch = getLatestPatch();

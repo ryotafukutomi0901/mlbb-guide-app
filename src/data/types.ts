@@ -31,13 +31,26 @@ export interface HeroSummary {
   slug: string;
   name: string;
   nameEn: string;
+  /** 旧表記・音写。表示には使わず検索でのみ照合する */
+  aliases?: string[];
   roles: Role[];
+  lane: Lane;
+  altLanes?: Lane[];
   difficulty: 1 | 2 | 3 | 4 | 5;
+  /** 編集部評価 */
   tier: Tier;
   releaseYear: number;
+  /** 日本語表記の裏取りが未完。UIには出さない */
+  needsVerification?: boolean;
 }
 
-export interface HeroMeta {
+/** 編集部が出典を確認して掲載しているデータの鮮度 */
+export interface Freshness {
+  patch: string;
+  updatedAt: string;
+}
+
+export interface HeroMeta extends Freshness {
   slug: string;
   winRate: number;
   pickRate: number;
@@ -82,12 +95,40 @@ export interface HeroDetail extends HeroSummary {
   skills: HeroSkill[];
   recommendedBuild: string[];
   story: string;
-  lane?: Lane;
   recommendedSpells?: string[];
   recommendedEmblem?: string;
-  counters?: string[];
-  counteredBy?: string[];
-  synergies?: string[];
+  counters?: CounterEdge[];
+  counteredBy?: CounterEdge[];
+  synergies?: CounterEdge[];
+}
+
+/** カウンター相性が成立する理由の分類 */
+export type CounterFactor =
+  | "lane"
+  | "burst"
+  | "cc"
+  | "mobility"
+  | "sustain"
+  | "range"
+  | "scaling"
+  | "pick";
+
+export const COUNTER_FACTOR_LABEL: Record<CounterFactor, string> = {
+  lane: "レーン相性",
+  burst: "バースト",
+  cc: "行動妨害",
+  mobility: "機動力",
+  sustain: "継続力",
+  range: "射程",
+  scaling: "スケーリング",
+  pick: "捕獲",
+};
+
+/** 相性の1辺。理由を持たないデータは掲載しない */
+export interface CounterEdge {
+  slug: string;
+  reason: string;
+  factors: CounterFactor[];
 }
 
 export type ItemCategory =
@@ -124,6 +165,7 @@ export interface ItemBonus {
   lifestealPct?: number;
   spellVampPct?: number;
   hpRegen?: number;
+  manaRegen?: number;
 }
 
 export interface Item {

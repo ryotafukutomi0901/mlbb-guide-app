@@ -111,7 +111,7 @@ export function HomeHero({
 
           <div className="hero-reveal mt-7 flex flex-wrap gap-3">
             <Link
-              href={`/characters/${hero.slug}`}
+              href={`/heroes/${hero.slug}`}
               className="gradient-primary group inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-[0_0_20px_rgba(139,92,246,0.45)] transition-all hover:shadow-[0_0_32px_rgba(139,92,246,0.65)]"
             >
               ヒーロー詳細

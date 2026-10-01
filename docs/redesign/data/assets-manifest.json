@@ -1,0 +1,354 @@
+{
+  "$comment": "MLBB画像アセットの取得マニフェスト。source は mobile-legends.fandom.com のファイル名(File:接頭辞なし)。scripts/gen/assets.mjs がこれを読んで public/images/{category}/{file} へ取得し、src/data/images.generated.ts を出力する。追加はこのファイルに追記して再実行するだけでよい。画像の著作権はMoonton社に帰属する(本サイトは非公式ファンサイト)。",
+  "sourceWiki": "https://mobile-legends.fandom.com",
+  "assets": [
+    {
+      "category": "emblems",
+      "key": "assassin",
+      "source": "Assassin Emblem.png",
+      "file": "assassin.png"
+    },
+    {
+      "category": "emblems",
+      "key": "mage",
+      "source": "Mage Emblem.png",
+      "file": "mage.png"
+    },
+    {
+      "category": "emblems",
+      "key": "marksman",
+      "source": "Marksman Emblem.png",
+      "file": "marksman.png"
+    },
+    {
+      "category": "emblems",
+      "key": "fighter",
+      "source": "Fighter Emblem.png",
+      "file": "fighter.png"
+    },
+    {
+      "category": "emblems",
+      "key": "tank",
+      "source": "Tank Emblem.png",
+      "file": "tank.png"
+    },
+    {
+      "category": "emblems",
+      "key": "support",
+      "source": "Support Emblem.png",
+      "file": "support.png"
+    },
+    {
+      "category": "emblems",
+      "key": "jungle",
+      "source": "Jungle Emblem.png",
+      "file": "jungle.png"
+    },
+    {
+      "category": "jungle",
+      "key": "crab",
+      "source": "Crab.png",
+      "file": "crab.png"
+    },
+    {
+      "category": "jungle",
+      "key": "fiend",
+      "source": "Fiend.png",
+      "file": "fiend.png"
+    },
+    {
+      "category": "jungle",
+      "key": "serpent",
+      "source": "Serpent.png",
+      "file": "serpent.png"
+    },
+    {
+      "category": "jungle",
+      "key": "rockursa",
+      "source": "Rockursa.png",
+      "file": "rockursa.png"
+    },
+    {
+      "category": "jungle",
+      "key": "scaled-lizard",
+      "source": "Scaled Lizard.png",
+      "file": "scaled-lizard.png"
+    },
+    {
+      "category": "jungle",
+      "key": "lithowanderer",
+      "source": "Lithowanderer.png",
+      "file": "lithowanderer.png"
+    },
+    {
+      "category": "jungle",
+      "key": "turtle",
+      "source": "Turtle.png",
+      "file": "turtle.png"
+    },
+    {
+      "category": "jungle",
+      "key": "lord",
+      "source": "Lord.png",
+      "file": "lord.png"
+    },
+    {
+      "category": "skills",
+      "key": "alucard/passive",
+      "source": "Pursuit.png",
+      "file": "alucard-passive.png"
+    },
+    {
+      "category": "skills",
+      "key": "alucard/skill1",
+      "source": "Groundsplitter.png",
+      "file": "alucard-skill1.png"
+    },
+    {
+      "category": "skills",
+      "key": "alucard/skill2",
+      "source": "Whirling Smash.png",
+      "file": "alucard-skill2.png"
+    },
+    {
+      "category": "skills",
+      "key": "alucard/ultimate",
+      "source": "Fission Wave.png",
+      "file": "alucard-ultimate.png"
+    },
+    {
+      "category": "skills",
+      "key": "tigreal/passive",
+      "source": "Fearless.png",
+      "file": "tigreal-passive.png"
+    },
+    {
+      "category": "skills",
+      "key": "tigreal/skill1",
+      "source": "Attack Wave.png",
+      "file": "tigreal-skill1.png"
+    },
+    {
+      "category": "skills",
+      "key": "tigreal/skill2",
+      "source": "Sacred Hammer.png",
+      "file": "tigreal-skill2.png"
+    },
+    {
+      "category": "skills",
+      "key": "tigreal/ultimate",
+      "source": "Implosion.png",
+      "file": "tigreal-ultimate.png"
+    },
+    {
+      "category": "skills",
+      "key": "franco/passive",
+      "source": "Wasteland Force.png",
+      "file": "franco-passive.png"
+    },
+    {
+      "category": "skills",
+      "key": "franco/skill1",
+      "source": "Iron Hook.png",
+      "file": "franco-skill1.png"
+    },
+    {
+      "category": "skills",
+      "key": "franco/skill2",
+      "source": "Fury Shock.png",
+      "file": "franco-skill2.png"
+    },
+    {
+      "category": "skills",
+      "key": "franco/ultimate",
+      "source": "Bloody Hunt.png",
+      "file": "franco-ultimate.png"
+    },
+    {
+      "category": "skills",
+      "key": "layla/passive",
+      "source": "Malefic Gun.png",
+      "file": "layla-passive.png"
+    },
+    {
+      "category": "skills",
+      "key": "layla/skill1",
+      "source": "Malefic Bomb.png",
+      "file": "layla-skill1.png"
+    },
+    {
+      "category": "skills",
+      "key": "layla/skill2",
+      "source": "Void Projectile.png",
+      "file": "layla-skill2.png"
+    },
+    {
+      "category": "skills",
+      "key": "layla/ultimate",
+      "source": "Destruction Rush.png",
+      "file": "layla-ultimate.png"
+    },
+    {
+      "category": "skills",
+      "key": "eudora/passive",
+      "source": "Superconductor.png",
+      "file": "eudora-passive.png"
+    },
+    {
+      "category": "skills",
+      "key": "eudora/skill1",
+      "source": "Forked Lightning.png",
+      "file": "eudora-skill1.png"
+    },
+    {
+      "category": "skills",
+      "key": "eudora/skill2",
+      "source": "Ball Lightning.png",
+      "file": "eudora-skill2.png"
+    },
+    {
+      "category": "skills",
+      "key": "eudora/ultimate",
+      "source": "Thunder's Wrath.png",
+      "file": "eudora-ultimate.png"
+    },
+    {
+      "category": "skills",
+      "key": "gusion/passive",
+      "source": "Dagger Specialist.png",
+      "file": "gusion-passive.png"
+    },
+    {
+      "category": "skills",
+      "key": "gusion/skill1",
+      "source": "Sword Spike.png",
+      "file": "gusion-skill1.png"
+    },
+    {
+      "category": "skills",
+      "key": "gusion/skill2",
+      "source": "Shadowblade Slaughter.png",
+      "file": "gusion-skill2.png"
+    },
+    {
+      "category": "skills",
+      "key": "gusion/ultimate",
+      "source": "Incandescence.png",
+      "file": "gusion-ultimate.png"
+    },
+    {
+      "category": "skills",
+      "key": "angela/passive",
+      "source": "Smart Heart.png",
+      "file": "angela-passive.png"
+    },
+    {
+      "category": "skills",
+      "key": "angela/skill1",
+      "source": "Love Waves.png",
+      "file": "angela-skill1.png"
+    },
+    {
+      "category": "skills",
+      "key": "angela/skill2",
+      "source": "Puppet-on-a-String.png",
+      "file": "angela-skill2.png"
+    },
+    {
+      "category": "skills",
+      "key": "angela/ultimate",
+      "source": "Heartguard.png",
+      "file": "angela-ultimate.png"
+    },
+    {
+      "category": "skills",
+      "key": "estes/passive",
+      "source": "Moon Blessing.png",
+      "file": "estes-passive.png"
+    },
+    {
+      "category": "skills",
+      "key": "estes/skill1",
+      "source": "Moonlight Immersion.png",
+      "file": "estes-skill1.png"
+    },
+    {
+      "category": "skills",
+      "key": "estes/skill2",
+      "source": "Domain of Moon Goddess.png",
+      "file": "estes-skill2.png"
+    },
+    {
+      "category": "skills",
+      "key": "estes/ultimate",
+      "source": "Blessing of Moon Goddess.png",
+      "file": "estes-ultimate.png"
+    },
+    {
+      "category": "skills",
+      "key": "fanny/passive",
+      "source": "Air Superiority.png",
+      "file": "fanny-passive.png"
+    },
+    {
+      "category": "skills",
+      "key": "fanny/skill1",
+      "source": "Tornado Strike.png",
+      "file": "fanny-skill1.png"
+    },
+    {
+      "category": "skills",
+      "key": "fanny/skill2",
+      "source": "Steel Cable.png",
+      "file": "fanny-skill2.png"
+    },
+    {
+      "category": "skills",
+      "key": "fanny/ultimate",
+      "source": "Cut Throat.png",
+      "file": "fanny-ultimate.png"
+    },
+    {
+      "category": "items",
+      "key": "raptor-machete",
+      "source": "Raptor Machete.png",
+      "file": "raptor-machete.png"
+    },
+    {
+      "category": "items",
+      "key": "hunters-knife",
+      "source": "Hunter's Knife.png",
+      "file": "hunter-s-knife.png"
+    },
+    {
+      "category": "items",
+      "key": "rogue-meteor",
+      "source": "Rogue Meteor.png",
+      "file": "rogue-meteor.png"
+    },
+    {
+      "category": "items",
+      "key": "ogre-tomahawk",
+      "source": "Ogre Tomahawk.png",
+      "file": "ogre-tomahawk.png"
+    },
+    {
+      "category": "items",
+      "key": "windtalker-scarlet",
+      "source": "Scarlet Phantom.png",
+      "file": "scarlet-phantom.png"
+    },
+    {
+      "category": "items",
+      "key": "magic-blade",
+      "source": "Magic Blade.png",
+      "file": "magic-blade.png"
+    },
+    {
+      "category": "items",
+      "key": "mystic-container",
+      "source": "Mystic Container.png",
+      "file": "mystic-container.png"
+    }
+  ]
+}

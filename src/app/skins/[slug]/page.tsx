@@ -63,7 +63,7 @@ export default async function SkinDetailPage(props: PageProps<"/skins/[slug]">) 
             <h1 className="mt-2 text-3xl font-black md:text-4xl">{skin.name}</h1>
             {hero && (
               <Link
-                href={`/characters/${hero.slug}`}
+                href={`/heroes/${hero.slug}`}
                 className="mt-1 inline-block text-sm text-text-muted transition-colors hover:text-primary"
               >
                 {hero.name} ({hero.nameEn})

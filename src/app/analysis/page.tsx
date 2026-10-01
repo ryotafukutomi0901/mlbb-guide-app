@@ -5,7 +5,10 @@ import { CountUp } from "@/components/ui/CountUp";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getMatchHistory, getPlayerProfile } from "@/repositories/matchRepository";
 
-export const metadata: Metadata = { title: "試合分析" };
+export const metadata: Metadata = {
+  title: "試合分析",
+  robots: { index: false, follow: true },
+};
 
 export default function AnalysisPage() {
   const profile = getPlayerProfile();
