@@ -8,38 +8,7 @@ import {
   type SessionUser,
 } from "@/lib/supabase/server";
 import type { CoachTask } from "./models";
-
-export type Plan = "anon" | "free" | "pro";
-
-/** 上限の指定。複数あるときは lifetime → perDay → perMonth の順に判定する。0 は利用不可 */
-export interface LimitRule {
-  perDay?: number;
-  perMonth?: number;
-  lifetime?: number;
-}
-
-/**
- * プラン別・用途別の利用上限。
- * 未登録でも1回はフル分析を体験できる(価値を実感してから登録・課金させる導線)。
- * スクショ読み取りは Vision で原価が高いため登録ユーザーに限る(登録の動機にもなる)。
- */
-export const QUOTA: Record<Plan, Record<CoachTask, LimitRule>> = {
-  anon: {
-    match_review: { lifetime: 1 },
-    followup: { perDay: 0 },
-    screenshot_parse: { lifetime: 0 },
-  },
-  free: {
-    match_review: { perMonth: 3 },
-    followup: { perDay: 3 },
-    screenshot_parse: { perMonth: 3 },
-  },
-  pro: {
-    match_review: { perDay: 5, perMonth: 100 },
-    followup: { perDay: 50 },
-    screenshot_parse: { perDay: 5, perMonth: 100 },
-  },
-};
+import { QUOTA, type Plan } from "./plans";
 
 export interface QuotaDecision {
   allowed: boolean;

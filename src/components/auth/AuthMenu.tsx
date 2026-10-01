@@ -1,44 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogIn, LogOut, User } from "lucide-react";
+import { useAuthUser } from "@/hooks/useAuthUser";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-/**
- * ログイン状態の表示。
- * サーバー側でcookieを読むと全ページが動的レンダリングになりSEO/性能を損なうため、
- * ここはクライアントでセッションを見る(静的生成を維持するための設計判断)。
- */
+/** ログイン状態の表示(判定は useAuthUser。静的生成を維持するためクライアントで見る) */
 export function AuthMenu() {
   const router = useRouter();
-  const [state, setState] = useState<{ ready: boolean; label: string | null }>({
-    ready: false,
-    label: null,
-  });
-
-  useEffect(() => {
-    const supabase = createSupabaseBrowserClient();
-    // 未設定環境ではセッションを判定できないため、何も表示しないまま終える
-    if (!supabase) return;
-
-    let active = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (active) {
-        setState({ ready: true, label: data.user?.email?.split("@")[0] ?? null });
-      }
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setState({ ready: true, label: session?.user.email?.split("@")[0] ?? null });
-    });
-
-    return () => {
-      active = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
+  const auth = useAuthUser();
 
   async function signOut() {
     const supabase = createSupabaseBrowserClient();
@@ -47,10 +18,10 @@ export function AuthMenu() {
     router.refresh();
   }
 
-  // 未設定環境・判定前は何も出さない(表示のちらつきを避ける)
-  if (!state.ready) return null;
+  // 未設定環境・判定前・障害中は何も出さない(ちらつきと、ログイン済みの人への誤ったログイン案内を避ける)
+  if (auth.status !== "signedIn" && auth.status !== "signedOut") return null;
 
-  if (!state.label) {
+  if (auth.status === "signedOut") {
     return (
       <Link
         href="/login"
@@ -70,7 +41,7 @@ export function AuthMenu() {
       >
         <User size={14} className="text-primary" />
         <span className="hidden max-w-24 truncate text-xs font-semibold md:block">
-          {state.label}
+          {auth.user.email?.split("@")[0] ?? "マイページ"}
         </span>
       </Link>
       <button
