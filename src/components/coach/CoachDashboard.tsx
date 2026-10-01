@@ -22,7 +22,7 @@ export function CoachDashboard() {
         <div>
           <p className="text-xs font-bold text-primary">サンプルレポート</p>
           <p className="mt-1 text-xs leading-relaxed text-text-muted">
-            AIコーチの分析画面をサンプルデータで表示しています。あなたの試合データを分析する機能は現在開発中です。
+            詳細レポートの見本を、架空の試合のサンプルデータで表示しています。あなたの試合の分析は、上のフォームから行えます。
           </p>
         </div>
       </div>
