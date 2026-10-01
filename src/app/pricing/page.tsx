@@ -5,7 +5,7 @@ import { JsonLd, breadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { alternateLanguages } from "@/i18n/config";
-import { QUOTA } from "@/lib/coach/quota";
+import { QUOTA } from "@/lib/coach/plans";
 
 const DESCRIPTION =
   "MLBB LABのプラン。攻略情報とAIコーチの無料枠は誰でも使えます。Proでは分析回数の拡大と、弱点の推移・練習メニュー・ヒーロー別コーチングが利用できます。";
@@ -30,6 +30,11 @@ const ROWS: Row[] = [
     label: "AIコーチのフル分析",
     free: `月${QUOTA.free.match_review.perMonth}回`,
     pro: `1日${QUOTA.pro.match_review.perDay}回 / 月${QUOTA.pro.match_review.perMonth}回`,
+  },
+  {
+    label: "試合結果のスクショから自動入力",
+    free: `月${QUOTA.free.screenshot_parse.perMonth}回`,
+    pro: `1日${QUOTA.pro.screenshot_parse.perDay}回 / 月${QUOTA.pro.screenshot_parse.perMonth}回`,
   },
   {
     label: "レポートへの追質問",

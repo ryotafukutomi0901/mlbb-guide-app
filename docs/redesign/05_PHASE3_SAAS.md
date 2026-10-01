@@ -83,28 +83,32 @@ Repository層に `src/repositories/userRepository.ts` / `matchRepository` の実
 src/app/api/coach/analyze/route.ts   POST 試合データ→CoachReport生成
 src/app/api/coach/followup/route.ts  POST レポートへの追質問(軽量モデル)
 src/lib/coach/schema.ts              zod: CoachInput / CoachReport の検証
-src/lib/coach/quota.ts               quota判定・usage記録
+src/lib/coach/plans.ts               プラン別の利用上限の定義(ブラウザからも読む)
+src/lib/coach/quota.ts               quota判定・usage記録(サーバー専用)
 src/lib/coach/models.ts              モデルルーティング表
 src/lib/coach/context.ts             Knowledge選択注入(全部渡さない)
 ```
 
 ### 生成フロー(必ずこの順序)
 1. `zod` で入力検証 → 不正は400。
-2. quota判定(S3)。超過は402(Proへの導線を返す)。
-3. `context.ts`: 対象ヒーロー+敵味方ヒーローの
+2. AIプロバイダが未設定なら、利用量に触れずに `sampleReport` を返す(下記)。
+3. 本人特定とquota判定(S3)。超過は402(Proへの導線を返す)。
+   認証基盤・利用量DBに届かないときは503(数えられないままAIを呼ばない。2026-09 改定)。
+4. `context.ts`: 対象ヒーロー+敵味方ヒーローの
    {name, roles, lane, tier, skills要約, counterEdges} と現行パッチ、
    ユーザープロファイル、直近3レポートの focusPoints のみを注入。
    **Knowledge全量やヒーロー133体を渡さない(コスト対策)。**
-4. `services/ai` の Provider で structured output(既存 `CoachReport` スキーマ)。
+5. `services/ai` の Provider で structured output(既存 `CoachReport` スキーマ)。
    `SYSTEM_PROMPT` に「Knowledgeにない事実(スキル名・数値)を生成しない」「日本語/{locale}で回答」を明記。
-5. 出力を zod 検証 → 失敗は1回だけリトライ → なお失敗なら500(偽レポートを返さない)。
-6. `coach_reports` へ保存 + `usage_events` へトークン/コスト記録。
+6. 出力を zod 検証 → 失敗は1回だけリトライ → なお失敗なら502(偽レポートを返さない)。
+   失敗した回を含め、消費したトークンの原価は記録する。
+7. `coach_reports` へ保存 + `usage_events` へトークン/コスト記録。
 
 ### モデルルーティング(`models.ts`)
 | 用途 | モデル | 理由 |
 |---|---|---|
 | フル分析(match_review) | `anthropic/claude-sonnet-5` (OpenRouter経由) | 品質が収益の源泉 |
-| 追質問(followup) | `anthropic/claude-haiku-4-5-20251001` | 低コスト |
+| 追質問(followup) | `anthropic/claude-haiku-4.5` (OpenRouter経由。B1で正しいslugに修正) | 低コスト |
 | ビルド/カウンター提案 | Knowledge Layerから**AI不要で生成**、補足文のみ軽量モデル | 原価ゼロ化 |
 
 APIキー未設定時: 500ではなく `sampleReport` を返し、UIに「サンプル(APIキー未設定)」と明示。
@@ -112,12 +116,12 @@ APIキー未設定時: 500ではなく `sampleReport` を返し、UIに「サン
 
 ## S3. Quota / Entitlements
 
-`src/lib/coach/quota.ts`:
-| プラン | フル分析 | 追質問 | 備考 |
-|---|---|---|---|
-| 未登録(anon) | 生涯1回 | 0 | IPハッシュ+UAで識別。体験用 |
-| free(登録) | 月3回 | レポートあたり3件 | |
-| pro | 日5回・月100回 | 無制限(日50) | 上限は乱用防止 |
+上限の定義は `src/lib/coach/plans.ts`、集計と判定は `src/lib/coach/quota.ts`:
+| プラン | フル分析 | 追質問 | スクショ読み取り(Phase 4 B2で追加) | 備考 |
+|---|---|---|---|---|
+| 未登録(anon) | 生涯1回 | 0 | 不可(401) | IPハッシュ+UAで識別。体験用 |
+| free(登録) | 月3回 | 日3回 | 月3回 | |
+| pro | 日5回・月100回 | 日50回 | 日5回・月100回 | 上限は乱用防止 |
 
 判定は `usage_events` の集計。超過時レスポンス: `{ error: "quota_exceeded", plan, resetAt, upgradeUrl }`。
 
